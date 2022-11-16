@@ -16,27 +16,26 @@ public class MyGrammarParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, INT=7, WS=8, PWD=9, EXIT=10, 
-		LOWERCASE=11, UPPERCASE=12, WORD=13;
+		PWD=1, CD=2, ECHO=3, LS=4, CAT=5, HEAD=6, TAIL=7, GREP=8, TEXTSQ=9, TEXTDQ=10, 
+		COMMAND=11, INPUT=12, INT=13, WS=14, ANYCHAR=15;
 	public static final int
-		RULE_expr = 0;
+		RULE_commandline = 0;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"expr"
+			"commandline"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'*'", "'/'", "'+'", "'-'", "'('", "')'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, null, null, "INT", "WS", "PWD", "EXIT", 
-			"LOWERCASE", "UPPERCASE", "WORD"
+			null, "PWD", "CD", "ECHO", "LS", "CAT", "HEAD", "TAIL", "GREP", "TEXTSQ", 
+			"TEXTDQ", "COMMAND", "INPUT", "INT", "WS", "ANYCHAR"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -90,177 +89,148 @@ public class MyGrammarParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
-	public static class ExprContext extends ParserRuleContext {
-		public ExprContext(ParserRuleContext parent, int invokingState) {
+	public static class CommandlineContext extends ParserRuleContext {
+		public CommandlineContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_expr; }
+		@Override public int getRuleIndex() { return RULE_commandline; }
 	 
-		public ExprContext() { }
-		public void copyFrom(ExprContext ctx) {
+		public CommandlineContext() { }
+		public void copyFrom(CommandlineContext ctx) {
 			super.copyFrom(ctx);
 		}
 	}
-	public static class NumberExprContext extends ExprContext {
+	public static class HeadContext extends CommandlineContext {
 		public Token atom;
-		public TerminalNode INT() { return getToken(MyGrammarParser.INT, 0); }
-		public NumberExprContext(ExprContext ctx) { copyFrom(ctx); }
+		public TerminalNode HEAD() { return getToken(MyGrammarParser.HEAD, 0); }
+		public HeadContext(CommandlineContext ctx) { copyFrom(ctx); }
 	}
-	public static class PwdExprContext extends ExprContext {
+	public static class CdContext extends CommandlineContext {
+		public Token atom;
+		public TerminalNode CD() { return getToken(MyGrammarParser.CD, 0); }
+		public CdContext(CommandlineContext ctx) { copyFrom(ctx); }
+	}
+	public static class DefaultContext extends CommandlineContext {
+		public Token left;
+		public Token right;
+		public TerminalNode COMMAND() { return getToken(MyGrammarParser.COMMAND, 0); }
+		public TerminalNode INPUT() { return getToken(MyGrammarParser.INPUT, 0); }
+		public DefaultContext(CommandlineContext ctx) { copyFrom(ctx); }
+	}
+	public static class TailContext extends CommandlineContext {
+		public Token atom;
+		public TerminalNode TAIL() { return getToken(MyGrammarParser.TAIL, 0); }
+		public TailContext(CommandlineContext ctx) { copyFrom(ctx); }
+	}
+	public static class GrepContext extends CommandlineContext {
+		public Token atom;
+		public TerminalNode GREP() { return getToken(MyGrammarParser.GREP, 0); }
+		public GrepContext(CommandlineContext ctx) { copyFrom(ctx); }
+	}
+	public static class LsContext extends CommandlineContext {
+		public Token atom;
+		public TerminalNode LS() { return getToken(MyGrammarParser.LS, 0); }
+		public LsContext(CommandlineContext ctx) { copyFrom(ctx); }
+	}
+	public static class CatContext extends CommandlineContext {
+		public Token atom;
+		public TerminalNode CAT() { return getToken(MyGrammarParser.CAT, 0); }
+		public CatContext(CommandlineContext ctx) { copyFrom(ctx); }
+	}
+	public static class EchoContext extends CommandlineContext {
+		public Token atom;
+		public TerminalNode ECHO() { return getToken(MyGrammarParser.ECHO, 0); }
+		public EchoContext(CommandlineContext ctx) { copyFrom(ctx); }
+	}
+	public static class PwdContext extends CommandlineContext {
 		public Token atom;
 		public TerminalNode PWD() { return getToken(MyGrammarParser.PWD, 0); }
-		public PwdExprContext(ExprContext ctx) { copyFrom(ctx); }
-	}
-	public static class ParenExprContext extends ExprContext {
-		public ExprContext expr() {
-			return getRuleContext(ExprContext.class,0);
-		}
-		public ParenExprContext(ExprContext ctx) { copyFrom(ctx); }
-	}
-	public static class InfixExprContext extends ExprContext {
-		public ExprContext left;
-		public Token op;
-		public ExprContext right;
-		public List<ExprContext> expr() {
-			return getRuleContexts(ExprContext.class);
-		}
-		public ExprContext expr(int i) {
-			return getRuleContext(ExprContext.class,i);
-		}
-		public InfixExprContext(ExprContext ctx) { copyFrom(ctx); }
-	}
-	public static class ExitExprContext extends ExprContext {
-		public Token atom;
-		public TerminalNode EXIT() { return getToken(MyGrammarParser.EXIT, 0); }
-		public ExitExprContext(ExprContext ctx) { copyFrom(ctx); }
+		public PwdContext(CommandlineContext ctx) { copyFrom(ctx); }
 	}
 
-	public final ExprContext expr() throws RecognitionException {
-		return expr(0);
-	}
-
-	private ExprContext expr(int _p) throws RecognitionException {
-		ParserRuleContext _parentctx = _ctx;
-		int _parentState = getState();
-		ExprContext _localctx = new ExprContext(_ctx, _parentState);
-		ExprContext _prevctx = _localctx;
-		int _startState = 0;
-		enterRecursionRule(_localctx, 0, RULE_expr, _p);
-		int _la;
+	public final CommandlineContext commandline() throws RecognitionException {
+		CommandlineContext _localctx = new CommandlineContext(_ctx, getState());
+		enterRule(_localctx, 0, RULE_commandline);
 		try {
-			int _alt;
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(10);
+			setState(12);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
-			case INT:
+			case COMMAND:
+				_localctx = new DefaultContext(_localctx);
+				enterOuterAlt(_localctx, 1);
 				{
-				_localctx = new NumberExprContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-
+				setState(2);
+				((DefaultContext)_localctx).left = match(COMMAND);
 				setState(3);
-				((NumberExprContext)_localctx).atom = match(INT);
-				}
-				break;
-			case T__4:
-				{
-				_localctx = new ParenExprContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-				setState(4);
-				match(T__4);
-				setState(5);
-				expr(0);
-				setState(6);
-				match(T__5);
+				((DefaultContext)_localctx).right = match(INPUT);
 				}
 				break;
 			case PWD:
+				_localctx = new PwdContext(_localctx);
+				enterOuterAlt(_localctx, 2);
 				{
-				_localctx = new PwdExprContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-				setState(8);
-				((PwdExprContext)_localctx).atom = match(PWD);
+				setState(4);
+				((PwdContext)_localctx).atom = match(PWD);
 				}
 				break;
-			case EXIT:
+			case CD:
+				_localctx = new CdContext(_localctx);
+				enterOuterAlt(_localctx, 3);
 				{
-				_localctx = new ExitExprContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
+				setState(5);
+				((CdContext)_localctx).atom = match(CD);
+				}
+				break;
+			case ECHO:
+				_localctx = new EchoContext(_localctx);
+				enterOuterAlt(_localctx, 4);
+				{
+				setState(6);
+				((EchoContext)_localctx).atom = match(ECHO);
+				}
+				break;
+			case LS:
+				_localctx = new LsContext(_localctx);
+				enterOuterAlt(_localctx, 5);
+				{
+				setState(7);
+				((LsContext)_localctx).atom = match(LS);
+				}
+				break;
+			case CAT:
+				_localctx = new CatContext(_localctx);
+				enterOuterAlt(_localctx, 6);
+				{
+				setState(8);
+				((CatContext)_localctx).atom = match(CAT);
+				}
+				break;
+			case HEAD:
+				_localctx = new HeadContext(_localctx);
+				enterOuterAlt(_localctx, 7);
+				{
 				setState(9);
-				((ExitExprContext)_localctx).atom = match(EXIT);
+				((HeadContext)_localctx).atom = match(HEAD);
+				}
+				break;
+			case TAIL:
+				_localctx = new TailContext(_localctx);
+				enterOuterAlt(_localctx, 8);
+				{
+				setState(10);
+				((TailContext)_localctx).atom = match(TAIL);
+				}
+				break;
+			case GREP:
+				_localctx = new GrepContext(_localctx);
+				enterOuterAlt(_localctx, 9);
+				{
+				setState(11);
+				((GrepContext)_localctx).atom = match(GREP);
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
-			}
-			_ctx.stop = _input.LT(-1);
-			setState(20);
-			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,2,_ctx);
-			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
-				if ( _alt==1 ) {
-					if ( _parseListeners!=null ) triggerExitRuleEvent();
-					_prevctx = _localctx;
-					{
-					setState(18);
-					_errHandler.sync(this);
-					switch ( getInterpreter().adaptivePredict(_input,1,_ctx) ) {
-					case 1:
-						{
-						_localctx = new InfixExprContext(new ExprContext(_parentctx, _parentState));
-						((InfixExprContext)_localctx).left = _prevctx;
-						pushNewRecursionContext(_localctx, _startState, RULE_expr);
-						setState(12);
-						if (!(precpred(_ctx, 6))) throw new FailedPredicateException(this, "precpred(_ctx, 6)");
-						setState(13);
-						((InfixExprContext)_localctx).op = _input.LT(1);
-						_la = _input.LA(1);
-						if ( !(_la==T__0 || _la==T__1) ) {
-							((InfixExprContext)_localctx).op = (Token)_errHandler.recoverInline(this);
-						}
-						else {
-							if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
-							_errHandler.reportMatch(this);
-							consume();
-						}
-						setState(14);
-						((InfixExprContext)_localctx).right = expr(7);
-						}
-						break;
-					case 2:
-						{
-						_localctx = new InfixExprContext(new ExprContext(_parentctx, _parentState));
-						((InfixExprContext)_localctx).left = _prevctx;
-						pushNewRecursionContext(_localctx, _startState, RULE_expr);
-						setState(15);
-						if (!(precpred(_ctx, 5))) throw new FailedPredicateException(this, "precpred(_ctx, 5)");
-						setState(16);
-						((InfixExprContext)_localctx).op = _input.LT(1);
-						_la = _input.LA(1);
-						if ( !(_la==T__2 || _la==T__3) ) {
-							((InfixExprContext)_localctx).op = (Token)_errHandler.recoverInline(this);
-						}
-						else {
-							if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
-							_errHandler.reportMatch(this);
-							consume();
-						}
-						setState(17);
-						((InfixExprContext)_localctx).right = expr(6);
-						}
-						break;
-					}
-					} 
-				}
-				setState(22);
-				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,2,_ctx);
-			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -269,38 +239,18 @@ public class MyGrammarParser extends Parser {
 			_errHandler.recover(this, re);
 		}
 		finally {
-			unrollRecursionContexts(_parentctx);
+			exitRule();
 		}
 		return _localctx;
 	}
 
-	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
-		switch (ruleIndex) {
-		case 0:
-			return expr_sempred((ExprContext)_localctx, predIndex);
-		}
-		return true;
-	}
-	private boolean expr_sempred(ExprContext _localctx, int predIndex) {
-		switch (predIndex) {
-		case 0:
-			return precpred(_ctx, 6);
-		case 1:
-			return precpred(_ctx, 5);
-		}
-		return true;
-	}
-
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\17\32\4\2\t\2\3\2"+
-		"\3\2\3\2\3\2\3\2\3\2\3\2\3\2\5\2\r\n\2\3\2\3\2\3\2\3\2\3\2\3\2\7\2\25"+
-		"\n\2\f\2\16\2\30\13\2\3\2\2\3\2\3\2\2\4\3\2\3\4\3\2\5\6\2\35\2\f\3\2\2"+
-		"\2\4\5\b\2\1\2\5\r\7\t\2\2\6\7\7\7\2\2\7\b\5\2\2\2\b\t\7\b\2\2\t\r\3\2"+
-		"\2\2\n\r\7\13\2\2\13\r\7\f\2\2\f\4\3\2\2\2\f\6\3\2\2\2\f\n\3\2\2\2\f\13"+
-		"\3\2\2\2\r\26\3\2\2\2\16\17\f\b\2\2\17\20\t\2\2\2\20\25\5\2\2\t\21\22"+
-		"\f\7\2\2\22\23\t\3\2\2\23\25\5\2\2\b\24\16\3\2\2\2\24\21\3\2\2\2\25\30"+
-		"\3\2\2\2\26\24\3\2\2\2\26\27\3\2\2\2\27\3\3\2\2\2\30\26\3\2\2\2\5\f\24"+
-		"\26";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\21\21\4\2\t\2\3\2"+
+		"\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\5\2\17\n\2\3\2\2\2\3\2\2\2\2\27\2"+
+		"\16\3\2\2\2\4\5\7\r\2\2\5\17\7\16\2\2\6\17\7\3\2\2\7\17\7\4\2\2\b\17\7"+
+		"\5\2\2\t\17\7\6\2\2\n\17\7\7\2\2\13\17\7\b\2\2\f\17\7\t\2\2\r\17\7\n\2"+
+		"\2\16\4\3\2\2\2\16\6\3\2\2\2\16\7\3\2\2\2\16\b\3\2\2\2\16\t\3\2\2\2\16"+
+		"\n\3\2\2\2\16\13\3\2\2\2\16\f\3\2\2\2\16\r\3\2\2\2\17\3\3\2\2\2\3\16";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

@@ -14,31 +14,50 @@ def get_username():
 
 
 class MyVisitor(MyGrammarVisitor):
-    def visitNumberExpr(self, ctx):
-        value = ctx.getText()
-        return int(value)
+    # def visitNumberExpr(self, ctx):
+    #     value = ctx.getText()
+    #     return int(value)
 
-    def visitParenExpr(self, ctx):
-        return self.visit(ctx.expr())
+    # def visitParenExpr(self, ctx):
+    #     return self.visit(ctx.expr())
 
-    def visitInfixExpr(self, ctx):
-        l = self.visit(ctx.left)
-        r = self.visit(ctx.right)
+    # def visitInfixExpr(self, ctx):
+    #     l = self.visit(ctx.left)
+    #     r = self.visit(ctx.right)
 
-        op = ctx.op.text
-        operation = {
-            "+": lambda: l + r,
-            "-": lambda: l - r,
-            "*": lambda: l * r,
-            "/": lambda: l / r,
-        }
-        return operation.get(op, lambda: None)()
+    #     op = ctx.op.text
+    #     operation = {
+    #         "+": lambda: l + r,
+    #         "-": lambda: l - r,
+    #         "*": lambda: l * r,
+    #         "/": lambda: l / r,
+    #     }
+    #     return operation.get(op, lambda: None)()
 
-    def visitPwdExpr(self, ctx):
+    def visitPwd(self, ctx):
         return os.getcwd()
 
-    def visitExitExpr(self, ctx):
-        sys.exit(0)
+    def visitCd(self, ctx: MyGrammarParser.CdContext):
+        cd_input = self.visit(ctx.right)
+        return os.chdir(cd_input)
+
+    def visitEcho(self, ctx: MyGrammarParser.EchoContext):
+        return super().visitEcho(ctx)
+
+    def visitLs(self, ctx: MyGrammarParser.LsContext):
+        return super().visitLs(ctx)
+
+    def visitCat(self, ctx: MyGrammarParser.CatContext):
+        return super().visitCat(ctx)
+
+    def visitHead(self, ctx: MyGrammarParser.HeadContext):
+        return super().visitHead(ctx)
+
+    def visitTail(self, ctx: MyGrammarParser.TailContext):
+        return super().visitTail(ctx)
+
+    def visitGrep(self, ctx: MyGrammarParser.GrepContext):
+        return super().visitGrep(ctx)
 
 
 if __name__ == "__main__":
@@ -49,7 +68,7 @@ if __name__ == "__main__":
         stream = CommonTokenStream(lexer)
         # parser
         parser = MyGrammarParser(stream)
-        tree = parser.expr()
+        tree = parser.commandline()
         # evaluator
         visitor = MyVisitor()
         output = visitor.visit(tree)
