@@ -160,7 +160,7 @@ class Parser:
             return None
 
 
-class CalcParser(Parser):
+class BashParser(Parser):
     def start(self):
         return self.expression()
 
@@ -234,7 +234,7 @@ class CalcParser(Parser):
         return rv
 
 
-parser = CalcParser()
+parser = BashParser()
 
 while True:
     try:
