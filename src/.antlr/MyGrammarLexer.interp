@@ -1,6 +1,6 @@
 token literal names:
 null
-null
+'pwd'
 null
 null
 null
@@ -18,7 +18,7 @@ null
 
 token symbolic names:
 null
-PWD
+null
 CD
 ECHO
 LS
@@ -35,7 +35,7 @@ WS
 ANYCHAR
 
 rule names:
-PWD
+T__0
 CD
 ECHO
 LS

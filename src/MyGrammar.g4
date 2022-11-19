@@ -1,7 +1,7 @@
 grammar MyGrammar;
 /* PARSER RULES */ 
 commandline : left=COMMAND right=INPUT #default
-            | atom=PWD  #pwd
+            | atom='pwd'  #pwd
             | atom=CD   #cd
             | atom=ECHO #echo
             | atom=LS   #ls
@@ -11,7 +11,7 @@ commandline : left=COMMAND right=INPUT #default
             | atom=GREP #grep
             ;
 
-PWD     : ('pwd')        ;
+        
 CD      : ('cd')     ;
 ECHO    : ('echo')  ;
 LS      : ('ls')         ;

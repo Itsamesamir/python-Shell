@@ -4,6 +4,7 @@ from antlr4 import *
 from dist.MyGrammarLexer import MyGrammarLexer
 from dist.MyGrammarParser import MyGrammarParser
 from dist.MyGrammarVisitor import MyGrammarVisitor
+from antlr4.tree.Trees import Trees
 
 
 def get_username():
@@ -73,3 +74,4 @@ if __name__ == "__main__":
         visitor = MyVisitor()
         output = visitor.visit(tree)
         print(output)
+        print(Trees.toStringTree(tree, None, parser))

@@ -16,7 +16,7 @@ public class MyGrammarParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		PWD=1, CD=2, ECHO=3, LS=4, CAT=5, HEAD=6, TAIL=7, GREP=8, TEXTSQ=9, TEXTDQ=10, 
+		T__0=1, CD=2, ECHO=3, LS=4, CAT=5, HEAD=6, TAIL=7, GREP=8, TEXTSQ=9, TEXTDQ=10, 
 		COMMAND=11, INPUT=12, INT=13, WS=14, ANYCHAR=15;
 	public static final int
 		RULE_commandline = 0;
@@ -29,12 +29,13 @@ public class MyGrammarParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
+			null, "'pwd'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, "PWD", "CD", "ECHO", "LS", "CAT", "HEAD", "TAIL", "GREP", "TEXTSQ", 
+			null, null, "CD", "ECHO", "LS", "CAT", "HEAD", "TAIL", "GREP", "TEXTSQ", 
 			"TEXTDQ", "COMMAND", "INPUT", "INT", "WS", "ANYCHAR"
 		};
 	}
@@ -144,7 +145,6 @@ public class MyGrammarParser extends Parser {
 	}
 	public static class PwdContext extends CommandlineContext {
 		public Token atom;
-		public TerminalNode PWD() { return getToken(MyGrammarParser.PWD, 0); }
 		public PwdContext(CommandlineContext ctx) { copyFrom(ctx); }
 	}
 
@@ -165,12 +165,12 @@ public class MyGrammarParser extends Parser {
 				((DefaultContext)_localctx).right = match(INPUT);
 				}
 				break;
-			case PWD:
+			case T__0:
 				_localctx = new PwdContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(4);
-				((PwdContext)_localctx).atom = match(PWD);
+				((PwdContext)_localctx).atom = match(T__0);
 				}
 				break;
 			case CD:

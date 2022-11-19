@@ -16,7 +16,7 @@ public class MyGrammarLexer extends Lexer {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		PWD=1, CD=2, ECHO=3, LS=4, CAT=5, HEAD=6, TAIL=7, GREP=8, TEXTSQ=9, TEXTDQ=10, 
+		T__0=1, CD=2, ECHO=3, LS=4, CAT=5, HEAD=6, TAIL=7, GREP=8, TEXTSQ=9, TEXTDQ=10, 
 		COMMAND=11, INPUT=12, INT=13, WS=14, ANYCHAR=15;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
@@ -28,20 +28,22 @@ public class MyGrammarLexer extends Lexer {
 
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"PWD", "CD", "ECHO", "LS", "CAT", "HEAD", "TAIL", "GREP", "TEXTSQ", "TEXTDQ", 
-			"COMMAND", "INPUT", "INT", "LOWERCASE", "UPPERCASE", "WS", "ANYCHAR"
+			"T__0", "CD", "ECHO", "LS", "CAT", "HEAD", "TAIL", "GREP", "TEXTSQ", 
+			"TEXTDQ", "COMMAND", "INPUT", "INT", "LOWERCASE", "UPPERCASE", "WS", 
+			"ANYCHAR"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
+			null, "'pwd'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, "PWD", "CD", "ECHO", "LS", "CAT", "HEAD", "TAIL", "GREP", "TEXTSQ", 
+			null, null, "CD", "ECHO", "LS", "CAT", "HEAD", "TAIL", "GREP", "TEXTSQ", 
 			"TEXTDQ", "COMMAND", "INPUT", "INT", "WS", "ANYCHAR"
 		};
 	}
