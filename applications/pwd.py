@@ -1,4 +1,9 @@
-from abstractFactory import abstract_application
+from abstractFactory import abstract_application, os
 
 class pwd(abstract_application):
-    pass
+    def exec(args, input, output):
+
+        print(os.getcwd())
+
+
+        
