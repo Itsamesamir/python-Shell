@@ -1,9 +1,8 @@
 from abstractFactory import abstract_application, os
 
 class pwd(abstract_application):
-    def exec(args, input, output):
-
-        print(os.getcwd())
+    def execute(args, input, output):
+        return os.getcwd()
 
 
         
