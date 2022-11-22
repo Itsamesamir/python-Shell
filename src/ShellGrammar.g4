@@ -2,10 +2,10 @@ grammar ShellGrammar;
 
 /*
  * Parser Rules
- */
+*/
 
 /*main pwd < "this should be arguement" arguement2 > thisatomarguement*/
-start: command EOF;
+start: command;
 command : command ';' command
         | pipe
         | call
@@ -22,6 +22,7 @@ applications: com='pwd'  #pwd
             | com='head' #head
             | com='tail' #tail
             | com='grep' #grep
+            | com='exit' #exit
             ;
 
 /*quoting*/

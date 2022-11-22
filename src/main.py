@@ -10,6 +10,9 @@ from antlr4.tree.Trees import Trees
 class MyVisitor(ShellGrammarVisitor):
     def visitPwd(self, ctx):
         return os.getcwd()
+    
+    def visitExit(self, ctx):
+        sys.exit(0)
 
     def visitCd(self, ctx: ShellGrammarParser.CdContext):
         return super().visitCd(ctx)
@@ -43,7 +46,7 @@ if __name__ == "__main__":
         parser = ShellGrammarParser(stream)
         tree = parser.start()
         # evaluator
-        visitor = ShellGrammarVisitor()
+        visitor = MyVisitor()
         output = visitor.visit(tree)
         print(output)
         print(Trees.toStringTree(tree, None, parser))
