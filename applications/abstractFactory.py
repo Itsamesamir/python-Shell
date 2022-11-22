@@ -10,7 +10,7 @@ class abstract_application:
         self.input = input
         self.output = output
 
-    def exec(args, input, output) -> None:
+    def execute(args, input, output) -> None:
         raise NotImplementedError
     
     def __str__(self) -> str:

@@ -4,6 +4,11 @@ import os
 from os import listdir
 from collections import deque
 from glob import glob
+from applications import *
+from applications.cd import cd
+from applications.echo import echo
+from applications.ls import ls
+from applications.pwd import pwd
 
 
 def eval(cmdline, out):
@@ -26,23 +31,13 @@ def eval(cmdline, out):
         app = tokens[0]
         args = tokens[1:]
         if app == "pwd":
-            out.append(os.getcwd())
+            out.append(pwd.exec(args))
         elif app == "cd":
-            if len(args) == 0 or len(args) > 1:
-                raise ValueError("wrong number of command line arguments")
-            os.chdir(args[0])
+            cd.exec(args)
         elif app == "echo":
-            out.append(" ".join(args) + "\n")
+            out.append(echo.exec(args))
         elif app == "ls":
-            if len(args) == 0:
-                ls_dir = os.getcwd()
-            elif len(args) > 1:
-                raise ValueError("wrong number of command line arguments")
-            else:
-                ls_dir = args[0]
-            for f in listdir(ls_dir):
-                if not f.startswith("."):
-                    out.append(f + "\n")
+            ls.exec(args)
         elif app == "cat":
             for a in args:
                 with open(a) as f:

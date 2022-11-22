@@ -3,7 +3,7 @@ import os
 from abstractFactory import abstract_application
 
 class ls(abstract_application):
-    def exec(args, input, output):
+    def execute(args, input, output):
         if len(args) == 0:
                 ls_dir = os.getcwd()
         elif len(args) > 1:
