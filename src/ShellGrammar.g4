@@ -6,14 +6,12 @@ grammar ShellGrammar;
 
 /*main pwd < "this should be arguement" arguement2 > thisatomarguement*/
 start: command;
-command : command ';' command
+command : command SEQUENCE command
         | pipe
         | call
-        | call2
         ;
-pipe : call '|' call | pipe '|' call;
-call: (applications WHITESPACE* (QUOTED | NON_KEYWORD | UNQUOTED)*);
-call2: (applications WHITESPACE? (redirection | WHITESPACE)* argument (WHITESPACE | atom)* WHITESPACE?);
+pipe : call PIPE call | pipe PIPE call;
+call: (applications WHITESPACE* (QUOTED | NON_KEYWORD | UNQUOTED)*) | (applications WHITESPACE? (redirection | WHITESPACE)* argument (WHITESPACE | atom)* WHITESPACE?);
 applications: com='pwd'  #pwd
             | com='cd'   #cd
             | com='echo' #echo
@@ -38,6 +36,8 @@ redirection : INPUT WHITESPACE* argument | OUTPUT WHITESPACE* argument;
   */
 INPUT: '<';
 OUTPUT: '>';
+PIPE: '|';
+SEQUENCE: ';';
 QUOTED : SINGLEQ | DOUBLEQ | BACKQ;
 SINGLEQ :  '\'' (NON_SINGLE_QUOTE)'\'' ;
 BACKQ : '`' (NON_BACK_QUOTE) '`';

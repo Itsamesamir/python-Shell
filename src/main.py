@@ -6,6 +6,9 @@ from dist.ShellGrammarParser import ShellGrammarParser
 from dist.ShellGrammarVisitor import ShellGrammarVisitor
 from antlr4.tree.Trees import Trees
 
+APPLICATIONS = ['pwd', 'cd', 'echo', 'ls', 'cat', 'head',
+                'tail', 'grep', 'find', 'sort', 'cat', 'uniq', 'exit']
+
 
 def getIndex(stream):
     tmp = []
@@ -31,10 +34,72 @@ def getText(stream):
     return tmp
 
 
+class operator():
+    def __init__(self, stream):
+        self.textList = [token.text for token in stream.tokens[:-1]]
+        self.indexList = [token.tokenIndex for token in stream.tokens[:-1]]
+        self.typeList = [token.type for token in stream.tokens[:-1]]
+        # self.current_app = None
+        # self.app_index = None
+        self.cycle = 0
+
+    # def findApp(self):
+    #     for app in zip(self.indexList, self.textList):
+    #         if app[0] != self.app_index and app[1] in APPLICATIONS:
+    #             self.current_app = app[1]
+    #             self.app_index = app[0]
+    #             self.cycle = app[0]
+    #         break
+
+    #     return self.current_app
+
+    # APPLICATIONS
+    def pwd(self):
+        print(os.getcwd())
+
+    def exit(self):
+        sys.exit(0)
+
+    def cd(self):
+        if len(self.textList) > 2:
+            raise ValueError("Wrong number of arguments")
+        try:
+            if len(self.textList) == 1:
+
+                os.chdir('/')
+            else:
+                os.chdir(self.textList[1])
+        except FileNotFoundError:
+            print("File not found")
+
+    def echo(self):
+        unfiltered = ""
+        unfiltered = ' '.join(self.textList[1:])
+        filterString = ''.join(
+            (filter(lambda x: x not in ['\'', '"', '`'], unfiltered)))
+        print(filterString + '\n')
+
+    def ls(self):
+        if len(self.textList) == 2:
+            ls_dir = os.chdir(self.textList[1])
+        elif len(self.textList) > 2:
+            raise ValueError("wrong number of command line arguments")
+        else:
+            ls_dir = os.getcwd()
+        for f in os.listdir(ls_dir):
+            print(f'{f}', end=" ")
+        print('\n')
+
+    def run(self):
+        while len(self.textList) > self.cycle:
+            if self.textList[self.cycle] in APPLICATIONS:
+                eval('self.'+self.textList[self.cycle]+'()')
+            self.cycle += 1
+
+
 class MyVisitor(ShellGrammarVisitor):
     def visitPwd(self, ctx):
         print(os.getcwd())
-        
 
     def visitExit(self, ctx):
         sys.exit(0)
@@ -44,8 +109,8 @@ class MyVisitor(ShellGrammarVisitor):
         if len(textList) > 2:
             raise ValueError("Wrong number of arguments")
         try:
-            if len(textList)==1:
-                
+            if len(textList) == 1:
+
                 os.chdir('/')
             else:
                 os.chdir(textList[1])
@@ -54,11 +119,12 @@ class MyVisitor(ShellGrammarVisitor):
 
     def visitEcho(self, ctx):
         textList = getText(stream)
-        s=""
-        for token in textList[1:]:
-            s+=token
-        print(s)
-        
+        unfiltered = ""
+        unfiltered = ' '.join(textList[1:])
+        filterString = ''.join(
+            (filter(lambda x: x not in ['\'', '"', '`'], unfiltered)))
+        print(filterString)
+        print("\n")
 
     def visitLs(self, ctx):
         textList = getText(stream)
@@ -70,7 +136,7 @@ class MyVisitor(ShellGrammarVisitor):
             ls_dir = os.getcwd()
         for f in os.listdir(ls_dir):
             print(f'{f}', end=" ")
-        
+        print('\n')
 
     def visitCat(self, ctx):
         return super().visitCat(ctx)
@@ -95,13 +161,15 @@ if __name__ == "__main__":
         stream = CommonTokenStream(lexer)
         stream.fill()
         # parser
-        parser = ShellGrammarParser(stream)
-        tree = parser.start()
+        # parser = ShellGrammarParser(stream)
+        # tree = parser.start()
         # evaluator
-        visitor = MyVisitor()
-        output = visitor.visit(tree)
+        evaluator = operator(stream)
+        evaluator.run()
+        # visitor = MyVisitor()
+        # visitor.visit(tree)
 
-        #print(f"\n {Trees.toStringTree(tree, None, parser)}")
+        # print(f"\n {Trees.toStringTree(tree, None, parser)}")
 
         # stream.fill()
         # print("{:<30} {:<10} {:<10} {:<10}".format(
