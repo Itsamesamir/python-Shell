@@ -31,13 +31,24 @@ def eval(cmdline, out):
         app = tokens[0]
         args = tokens[1:]
         if app == "pwd":
-            out.append(pwd.exec(args))
+            out.append(os.getcwd())
         elif app == "cd":
-            cd.exec(args)
+            if len(args) == 0 or len(args) > 1:
+                raise ValueError("wrong number of command line arguments")
+            else:
+                os.chdir(args[0])
         elif app == "echo":
-            out.append(echo.exec(args))
+            print((" ".join(args) + "\n"))
         elif app == "ls":
-            ls.exec(args)
+            if len(args) == 0:
+                ls_dir = os.getcwd()
+            elif len(args) > 1:
+                raise ValueError("wrong number of command line arguments")
+            else:
+                ls_dir = args[0]
+                for f in listdir(ls_dir):
+                    if not f.startswith("."):
+                        out.append(f + "\n")
         elif app == "cat":
             for a in args:
                 with open(a) as f:
