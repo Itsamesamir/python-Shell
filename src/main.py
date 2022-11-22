@@ -33,7 +33,8 @@ def getText(stream):
 
 class MyVisitor(ShellGrammarVisitor):
     def visitPwd(self, ctx):
-        return os.getcwd()
+        print(os.getcwd())
+        
 
     def visitExit(self, ctx):
         sys.exit(0)
@@ -43,12 +44,21 @@ class MyVisitor(ShellGrammarVisitor):
         if len(textList) > 2:
             raise ValueError("Wrong number of arguments")
         try:
-            os.chdir(textList[1])
+            if len(textList)==1:
+                
+                os.chdir('/')
+            else:
+                os.chdir(textList[1])
         except FileNotFoundError:
             print("File not found")
 
     def visitEcho(self, ctx):
-        return super().visitEcho(ctx)
+        textList = getText(stream)
+        s=""
+        for token in textList[1:]:
+            s+=token
+        print(s)
+        
 
     def visitLs(self, ctx):
         textList = getText(stream)
@@ -59,7 +69,8 @@ class MyVisitor(ShellGrammarVisitor):
         else:
             ls_dir = os.getcwd()
         for f in os.listdir(ls_dir):
-            print(f, end=" ")
+            print(f'{f}', end=" ")
+        
 
     def visitCat(self, ctx):
         return super().visitCat(ctx)
@@ -90,7 +101,7 @@ if __name__ == "__main__":
         visitor = MyVisitor()
         output = visitor.visit(tree)
 
-        print(f"\n {Trees.toStringTree(tree, None, parser)}")
+        #print(f"\n {Trees.toStringTree(tree, None, parser)}")
 
         # stream.fill()
         # print("{:<30} {:<10} {:<10} {:<10}".format(
