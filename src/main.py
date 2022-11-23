@@ -10,6 +10,103 @@ APPLICATIONS = ['pwd', 'cd', 'echo', 'ls', 'cat', 'head',
                 'tail', 'grep', 'find', 'sort', 'cat', 'uniq', 'exit']
 
 
+class operator():
+    def __init__(self, stream):
+        self.textList = [token.text for token in stream.tokens[:-1]]
+        self.indexList = [token.tokenIndex for token in stream.tokens[:-1]]
+        self.typeList = [token.type for token in stream.tokens[:-1]]
+        self.cycle = 0
+
+    # APPLICATIONS
+    def pwd(self, args):
+        if len(args) > 0:
+            print("pwd: too many arguments \n")
+            return
+        print(os.getcwd())
+        return os.getcwd()
+
+    def exit(self, args):
+        sys.exit(0)
+
+    def cd(self, args):
+        if len(args) > 1:
+            print(f"cd: string not in pwd: {args[0]} \n")
+            return
+        try:
+            if len(args) == 0:
+                return os.chdir('/')
+            else:
+                return os.chdir(args[0])
+        except FileNotFoundError:
+            print(f"cd: no such file or directory {args[0]} \n")
+
+    def echo(self, args):
+        unfiltered = ""
+        unfiltered = ' '.join(args)
+        filterString = ''.join(
+            (filter(lambda x: x not in ['\'', '"', '`'], unfiltered)))
+        print(filterString + '\n')
+
+    def ls(self, args):
+        if len(args) == 1:
+            ls_dir = args[0]
+        elif len(args) > 1:
+            raise ValueError("too many arguements")
+        else:
+            ls_dir = os.getcwd()
+        try:
+            for f in os.listdir(ls_dir):
+                print(f'{f}', end='    ')
+            print('\n')
+        except FileNotFoundError:
+            print(f"ls: no such file or directory {args[0]} \n")
+
+    def cat(self, args):
+        if len(args) == 0:
+            try:
+                while 1:
+                    inp = input()
+                    print(inp)
+            except KeyboardInterrupt:
+                print('\n')
+                return
+        for file_path in args:
+            try:
+                f = open(file_path, 'r')
+                content = f.read()
+                f.close()
+                print(content[:-1])
+            except FileNotFoundError:
+                print(f"cat: {file_path}: no such file or directory")
+        print()
+
+    # def head():
+
+    def run(self):
+        # Segments tokens into groups seperated by sequences, pipes, or redirections
+        sections = []
+        tmp_list = []
+        for n in range(0, len(self.textList)):
+            if self.textList[n] in [';', '|', '<', '>']:
+                sections.append(tmp_list.copy())
+                tmp_list.clear()
+                sections.append(self.textList[n])
+            else:
+                tmp_list.append(self.textList[n])
+        sections.append(tmp_list)
+
+        while len(sections) > self.cycle:
+            if sections[self.cycle] not in [';', '|', '<', '>']:
+                if sections[self.cycle][0] in APPLICATIONS:
+                    tmp = eval(
+                        'self.'+sections[self.cycle][0]+'('+str(sections[self.cycle][1:])+')')
+                else:
+                    tmp = sections[self.cycle]
+            self.cycle += 1
+
+# CODE FOR VISITOR
+
+
 def getIndex(stream):
     tmp = []
     for token in stream.tokens[:-1]:
@@ -32,69 +129,6 @@ def getText(stream):
         tmp.append(token.text)
 
     return tmp
-
-
-class operator():
-    def __init__(self, stream):
-        self.textList = [token.text for token in stream.tokens[:-1]]
-        self.indexList = [token.tokenIndex for token in stream.tokens[:-1]]
-        self.typeList = [token.type for token in stream.tokens[:-1]]
-        # self.current_app = None
-        # self.app_index = None
-        self.cycle = 0
-
-    # def findApp(self):
-    #     for app in zip(self.indexList, self.textList):
-    #         if app[0] != self.app_index and app[1] in APPLICATIONS:
-    #             self.current_app = app[1]
-    #             self.app_index = app[0]
-    #             self.cycle = app[0]
-    #         break
-
-    #     return self.current_app
-
-    # APPLICATIONS
-    def pwd(self):
-        print(os.getcwd())
-
-    def exit(self):
-        sys.exit(0)
-
-    def cd(self):
-        if len(self.textList) > 2:
-            raise ValueError("Wrong number of arguments")
-        try:
-            if len(self.textList) == 1:
-
-                os.chdir('/')
-            else:
-                os.chdir(self.textList[1])
-        except FileNotFoundError:
-            print("File not found")
-
-    def echo(self):
-        unfiltered = ""
-        unfiltered = ' '.join(self.textList[1:])
-        filterString = ''.join(
-            (filter(lambda x: x not in ['\'', '"', '`'], unfiltered)))
-        print(filterString + '\n')
-
-    def ls(self):
-        if len(self.textList) == 2:
-            ls_dir = os.chdir(self.textList[1])
-        elif len(self.textList) > 2:
-            raise ValueError("wrong number of command line arguments")
-        else:
-            ls_dir = os.getcwd()
-        for f in os.listdir(ls_dir):
-            print(f'{f}', end=" ")
-        print('\n')
-
-    def run(self):
-        while len(self.textList) > self.cycle:
-            if self.textList[self.cycle] in APPLICATIONS:
-                eval('self.'+self.textList[self.cycle]+'()')
-            self.cycle += 1
 
 
 class MyVisitor(ShellGrammarVisitor):
@@ -155,7 +189,7 @@ class MyVisitor(ShellGrammarVisitor):
 
 if __name__ == "__main__":
     while 1:
-        data = InputStream(input("8==D "))
+        data = InputStream(input("> "))
         # lexer
         lexer = ShellGrammarLexer(data)
         stream = CommonTokenStream(lexer)
