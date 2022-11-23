@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from antlr4 import *
 from dist.ShellGrammarLexer import ShellGrammarLexer
 from dist.ShellGrammarParser import ShellGrammarParser
@@ -22,7 +23,7 @@ class operator():
         if len(args) > 0:
             print("pwd: too many arguments \n")
             return
-        print(os.getcwd())
+        print(os.getcwd(), '\n')
         return os.getcwd()
 
     def exit(self, args):
@@ -51,7 +52,8 @@ class operator():
         if len(args) == 1:
             ls_dir = args[0]
         elif len(args) > 1:
-            raise ValueError("too many arguements")
+            print("ls: too many arguments \n")
+            return
         else:
             ls_dir = os.getcwd()
         try:
@@ -80,10 +82,136 @@ class operator():
                 print(f"cat: {file_path}: no such file or directory")
         print()
 
-    # def head():
+    def head(self, args):
+        index = 10
+        if len(args) == 0:
+            pass
+        else:
+            if args[0] == '-n':
+                try:
+                    index = int(args[1])
+                    if index < 1:
+                        print(f"head: illegal line count -- {index} \n")
+                        return
+                    args.pop(0)
+                    args.pop(0)
+                except IndexError:
+                    print(f"head: option requires an arguement -- n \n")
+                    return
+                except ValueError:
+                    print(f"head: illegal line count -- \'{args[1]}\' \n")
+                    return
+
+        if len(args) == 0:
+            try:
+                counter = 0
+                while counter < index:
+                    inp = input()
+                    print(inp)
+                    counter += 1
+                print()
+            except KeyboardInterrupt:
+                print('\n')
+                return
+
+        fs = None
+        for file_path in args:
+            try:
+                f = open(file_path, 'r')
+                if fs == None:
+                    fs = file_path
+                if fs != file_path:
+                    print()
+                lines = f.readlines()
+                if len(args) > 1:
+                    print(f"==> {file_path} <==")
+                for line in lines[:index]:
+                    print(line[:-1])
+            except FileNotFoundError:
+                print(f"head: {file_path}: no such file or directory")
+        print()
+
+    def tail(self, args):
+        index = -10
+        if len(args) == 0:
+            pass
+        else:
+            if args[0] == '-n':
+                try:
+                    index = int(args[1])
+                    args.pop(0)
+                    args.pop(0)
+                    if index > 0:
+                        index *= -1
+                except IndexError:
+                    print(f"tail: option requires an arguement -- n \n")
+                    return
+                except ValueError:
+                    print(f"tail: illegal line count \'{args[1]}\' \n")
+                    return
+
+        if len(args) == 0:
+            try:
+                while 1:
+                    inp = input()
+                    print(inp)
+                print()
+            except KeyboardInterrupt:
+                print('\n')
+                return
+
+        fs = None
+        for file_path in args:
+            try:
+                f = open(file_path, 'r')
+                if fs == None:
+                    fs = file_path
+                if fs != file_path:
+                    print()
+                lines = f.readlines()
+                if len(args) > 1:
+                    print(f"==> {file_path} <==")
+                for line in lines[index:]:
+                    print(line[:-1])
+            except FileNotFoundError:
+                print(f"head: {file_path}: no such file or directory")
+        print()
+
+    def grep(self, args):
+        if len(args) == 0:
+            print("grep: no arguments were entered \n")
+            return
+        elif len(args) == 1:
+            try:
+                while 1:
+                    input()
+                print()
+            except KeyboardInterrupt:
+                print('\n')
+                return
+        else:
+            pattern = args[0]
+            args.pop(0)
+            for file_path in args:
+                try:
+                    f = open(file_path, 'r')
+                    lines = f.readlines()
+                    for line in lines:
+                        match = re.search(pattern, line[:-1])
+                        if match:
+                            if len(args) == 1:
+                                print(f"{line[:-1]}")
+                            else:
+                                print(f"{file_path}: {line[:-1]}")
+                except FileNotFoundError:
+                    print(f"grep: {file_path}: no such file or directory")
+            print()
 
     def run(self):
-        # Segments tokens into groups seperated by sequences, pipes, or redirections
+        # Check if stdrin is empty and if it is end the execution of the function
+        if len(self.textList) == 0:
+            return
+        # Segments tokens into groups seperated by sequences, pipes, or redirections (formats the stream input)
         sections = []
         tmp_list = []
         for n in range(0, len(self.textList)):
@@ -95,6 +223,7 @@ class operator():
                 tmp_list.append(self.textList[n])
         sections.append(tmp_list)
 
+        # Processes the actual stream input and applies logic based on class defined functions above
         while len(sections) > self.cycle:
             if sections[self.cycle] not in [';', '|', '<', '>']:
                 if sections[self.cycle][0] in APPLICATIONS:
