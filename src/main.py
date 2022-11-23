@@ -39,19 +39,7 @@ class operator():
         self.textList = [token.text for token in stream.tokens[:-1]]
         self.indexList = [token.tokenIndex for token in stream.tokens[:-1]]
         self.typeList = [token.type for token in stream.tokens[:-1]]
-        # self.current_app = None
-        # self.app_index = None
         self.cycle = 0
-
-    # def findApp(self):
-    #     for app in zip(self.indexList, self.textList):
-    #         if app[0] != self.app_index and app[1] in APPLICATIONS:
-    #             self.current_app = app[1]
-    #             self.app_index = app[0]
-    #             self.cycle = app[0]
-    #         break
-
-    #     return self.current_app
 
     # APPLICATIONS
     def pwd(self):
