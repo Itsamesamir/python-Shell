@@ -20,6 +20,10 @@ applications: com='pwd'  #pwd
             | com='head' #head
             | com='tail' #tail
             | com='grep' #grep
+            | com='find' #find
+            | com='sort' #sort
+            | com='cut' #cut
+            | com='uniq' #uniq
             | com='exit' #exit
             ;
 
@@ -38,10 +42,10 @@ INPUT: '<';
 OUTPUT: '>';
 PIPE: '|';
 SEQUENCE: ';';
-QUOTED : SINGLEQ | DOUBLEQ | BACKQ;
 SINGLEQ :  '\'' (NON_SINGLE_QUOTE)'\'' ;
-BACKQ : '`' (NON_BACK_QUOTE) '`';
 DOUBLEQ : '"'(BACKQ | DOUBLE_QUOTE_CONTENT )* '"';
+BACKQ : '`' (NON_BACK_QUOTE) '`';
+QUOTED : SINGLEQ | DOUBLEQ | BACKQ;
 NEW_LINE :  ('\n'|'\r')->skip ;
 WHITESPACE: (' ')->skip;
 UNQUOTED: ~(' '|'\n'|'\r'|'"'|'\''|'`'|'|'|';'|'<'|'>')+;
