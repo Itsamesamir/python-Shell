@@ -20,16 +20,16 @@ class operator():
         self.cycle = 0
 
     # APPLICATIONS
-    def pwd(self, args):
+    def pwd(self, args, pipeArg):
         if len(args) > 0:
             print("pwd: too many arguments")
             return
         return [os.getcwd()]
 
-    def exit(self, args):
+    def exit(self, args, pipeArg):
         sys.exit(0)
 
-    def cd(self, args):
+    def cd(self, args, pipeArg):
         if len(args) > 1:
             print(f"cd: string not in pwd: {args[0]}")
             return
@@ -42,31 +42,37 @@ class operator():
             print(f"cd: no such file or directory {args[0]}")
             return
 
-    def echo(self, args):
+    def echo(self, args, pipeArg):
+        args = self.glob(None, None, args, True)
         unfiltered = ""
         unfiltered = ' '.join(args)
         filterString = ''.join(
             (filter(lambda x: x not in ['\'', '"', '`'], unfiltered)))
         return [filterString]
 
-    def ls(self, args):
+    def ls(self, args, pipeArg):
         if len(args) == 1:
-            ls_dir = args[0]
+            ls_dir = self.glob(None, None, args, True)
         elif len(args) > 1:
-            print("ls: too many arguments")
+            print(f"ls: string not in pwd: {args[0]}")
             return
         else:
-            ls_dir = os.getcwd()
+            ls_dir = [os.getcwd()]
         try:
             result = []
-            for f in os.listdir(ls_dir):
-                result.append(f+'    ')
+            print(ls_dir)
+            for path in ls_dir:
+                if os.path.isdir(path):
+                    for f in os.listdir(path):
+                        result.append(f+'\t')
+                else:
+                    result.append(path+'\t')
             return result
         except FileNotFoundError:
             print(f"ls: no such file or directory {args[0]}")
             return
 
-    def cat(self, args):
+    def cat(self, args, pipeArg):
         if len(args) == 0:
             try:
                 while 1:
@@ -87,7 +93,7 @@ class operator():
                     f"cat: {file_path}: no such file or directory")
         return result
 
-    def head(self, args):
+    def head(self, args, pipeArg):
         index = 10
         if len(args) == 0:
             pass
@@ -108,36 +114,43 @@ class operator():
                     return
 
         if len(args) == 0:
-            try:
-                counter = 0
-                while counter < index:
-                    inp = input()
-                    print(inp)
-                    counter += 1
-                print()
-            except KeyboardInterrupt:
-                print()
-                return
+            if pipeArg:
+                for n in pipeArg:
+                    args.append(n)
+            else:
+                try:
+                    counter = 0
+                    while counter < index:
+                        inp = input()
+                        print(inp)
+                        counter += 1
+                    print()
+                except KeyboardInterrupt:
+                    print()
+                    return
 
         result = []
         fs = None
         for file_path in args:
             try:
-                f = open(file_path, 'r')
-                if fs == None:
-                    fs = file_path
-                if fs != file_path:
-                    result.append('')
-                lines = f.readlines()
-                if len(args) > 1:
-                    result.append(f"==> {file_path} <==")
+                if pipeArg:
+                    lines = file_path.splitlines()
+                else:
+                    f = open(file_path, 'r')
+                    if fs == None:
+                        fs = file_path
+                    if fs != file_path:
+                        result.append('')
+                    lines = f.read().splitlines()
+                    if len(args) > 1:
+                        result.append(f"==> {file_path} <==")
                 for line in lines[:index]:
-                    result.append((line[:-1]))
+                    result.append(line)
             except FileNotFoundError:
                 result.append(f"head: {file_path}: no such file or directory")
         return result
 
-    def tail(self, args):
+    def tail(self, args, pipeArg):
         index = -10
         if len(args) == 0:
             pass
@@ -157,110 +170,135 @@ class operator():
                     return
 
         if len(args) == 0:
-            try:
-                while 1:
-                    inp = input()
-                    print(inp)
-            except KeyboardInterrupt:
-                print()
-                return
+            if pipeArg:
+                for n in pipeArg:
+                    args.append(n)
+            else:
+                try:
+                    while 1:
+                        inp = input()
+                        print(inp)
+                except KeyboardInterrupt:
+                    print()
+                    return
 
         result = []
         fs = None
         for file_path in args:
             try:
-                f = open(file_path, 'r')
-                if fs == None:
-                    fs = file_path
-                if fs != file_path:
-                    result.append(' ')
-                lines = f.readlines()
-                if len(args) > 1:
-                    result.append(f"==> {file_path} <==")
+                if pipeArg:
+                    lines = file_path.splitlines()
+                else:
+                    f = open(file_path, 'r')
+                    if fs == None:
+                        fs = file_path
+                    if fs != file_path:
+                        result.append(' ')
+                    lines = f.read().splitlines()
+                    if len(args) > 1:
+                        result.append(f"==> {file_path} <==")
                 for line in lines[index:]:
                     result.append(line[:-1])
             except FileNotFoundError:
                 result.append(f"head: {file_path}: no such file or directory")
         return result
 
-    def grep(self, args):
+    def grep(self, args, pipeArg):
         if len(args) == 0:
             print("grep: no arguments were entered")
             return
         elif len(args) == 1:
-            try:
-                while 1:
-                    input()
-            except KeyboardInterrupt:
-                print()
-                return
-        else:
-            result = []
-            pattern = args[0]
-            args.pop(0)
-            for file_path in args:
+            if pipeArg:
+                for n in pipeArg:
+                    args.append(n)
+            else:
                 try:
-                    f = open(file_path, 'r')
-                    lines = f.readlines()
-                    for line in lines:
-                        match = re.search(pattern, line[:-1])
-                        if match:
-                            if len(args) == 1:
-                                result.append(f"{line[:-1]}")
-                            else:
-                                result.append(f"{file_path}: {line[:-1]}")
-                except FileNotFoundError:
-                    result.append(
-                        f"grep: {file_path}: no such file or directory")
-            return result
+                    while 1:
+                        input()
+                except KeyboardInterrupt:
+                    print()
+                    return
 
-    def uniq(self, args):
-        if len(args) == 0:
+        result = []
+        pattern = args[0]
+        args.pop(0)
+        for file_path in args:
             try:
-                while 1:
-                    inp = input()
-                    print(inp)
-            except KeyboardInterrupt:
-                print()
-                return
+                if pipeArg:
+                    lines = file_path.splitlines()
+                else:
+                    f = open(file_path, 'r')
+                    lines = f.read().splitlines()
+                for line in lines:
+                    match = re.search(pattern, line)
+                    if match:
+                        if len(args) == 1:
+                            result.append(line)
+                        else:
+                            result.append(f"{file_path}: {line}")
+            except FileNotFoundError:
+                result.append(
+                    f"grep: {file_path}: no such file or directory")
+        return result
+
+    def uniq(self, args, pipeArg):
+        case = False
+        if len(args) == 0:
+            pass
         else:
-            case = False
             if args[0] == '-i':
                 case = True
                 args.pop(0)
-            if len(args) > 1:
-                print(f"uniq: too many arguments")
-                return
+
+        if len(args) == 0:
+            if pipeArg:
+                for n in pipeArg:
+                    args.append(n)
             else:
                 try:
-                    f = open(args[0], 'r')
-                    lines = f.readlines()
-                    if case:
-                        n = 0
-                        while len(lines)-1 > n:
-                            if lines[n].lower() == lines[n+1].lower():
-                                lines.pop(n)
-                                continue
-                            n += 1
-                    else:
-                        n = 0
-                        while len(lines)-1 > n:
-                            if lines[n] == lines[n+1]:
-                                lines.pop(n)
-                                continue
-                            n += 1
-
-                    return [line[:-1] for line in lines]
-                except FileNotFoundError:
-                    print(f"uniq: {args[0]}: no such file or directory")
+                    while 1:
+                        inp = input()
+                        print(inp)
+                except KeyboardInterrupt:
+                    print()
                     return
 
-    def find(self, args):
+        if len(args) > 1:
+            print(f"uniq: too many arguments")
+            return
+        else:
+            try:
+                if pipeArg:
+                    lines = args[0].splitlines()
+                else:
+                    f = open(args[0], 'r')
+                    lines = f.read().splitlines()
+                if case:
+                    n = 0
+                    while len(lines)-1 > n:
+                        if lines[n].lower() == lines[n+1].lower():
+                            lines.pop(n)
+                            continue
+                        n += 1
+                else:
+                    n = 0
+                    while len(lines)-1 > n:
+                        if lines[n] == lines[n+1]:
+                            lines.pop(n)
+                            continue
+                        n += 1
+
+                return [line for line in lines]
+            except FileNotFoundError:
+                print(f"uniq: {args[0]}: no such file or directory")
+                return
+
+    def find(self, args, pipeArg):
         pattern = None
         if len(args) == 0:
             print("find: please enter a file path")
             return
-        elif len(args) > 1:
+        if len(args) > 1:
             if args[1] == '-name':
                 if len(args) == 2:
                     print("find: -name requires additional arguements")
@@ -268,15 +306,6 @@ class operator():
                 elif len(args) > 3:
                     print(f"find: {args[3]}: unkown primary or operator")
                     return
-                else:
-                    pattern = list(args[2]).copy()
-                    for n in range(0, len(args[2])):
-                        if args[2][n] in ['^', '$', '.', '|', '?', '+', '(', ')', '[', ']', '{', '}']:
-                            pattern[n] = '\\' + args[2][n]
-                        if args[2][n] == '*':
-                            pattern[n] = '.*'
-                    pattern.append('$')
-                    pattern = ''.join(pattern)
             elif args[0] == '-name':
                 print("find: illegal option --n")
                 return
@@ -286,14 +315,7 @@ class operator():
 
         result = []
         if os.path.exists(args[0]):
-            for dName, sdName, fList in os.walk(args[0]):
-                if pattern:
-                    for fileName in fList:
-                        if re.search(pattern, fileName):
-                            result.append(os.path.join(dName, fileName))
-                else:
-                    for fileName in fList:
-                        result.append(os.path.join(dName, fileName))
+            result = self.glob(args[2], args[0])
             return result
         else:
             print(f"find: {args[0]}: no such file or directory")
@@ -301,45 +323,7 @@ class operator():
 
     # EVALUATION
 
-    def runApp(self, text_list, is_cycle):
-        if is_cycle:
-            if text_list[self.cycle][0] in APPLICATIONS:
-                tmp = eval(
-                    'self.'+text_list[self.cycle][0]+'('+str(text_list[self.cycle][1:])+')')
-                if text_list[self.cycle][0] == 'ls':
-                    for output in tmp:
-                        print(output, end='      ')
-                    print("\n")
-                    return
-                elif tmp == None:
-                    print()
-                    return
-                else:
-                    for output in tmp:
-                        print(output)
-                print()
-                return
-            else:
-                print(
-                    f"COMP0010 shell: command not found: {text_list[self.cycle][0]} \n")
-                return
-        else:
-            if text_list[0] in APPLICATIONS:
-                tmp = eval(
-                    'self.'+text_list[0]+'('+str(text_list[1:])+')')
-                return tmp
-            else:
-                print(
-                    f"COMP0010 shell: command not found: {text_list[0]} \n")
-                return
-
-    def run(self):
-        # Check if stdrin is empty and if it is end the execution of the function
-        if len(self.textList) == 0:
-            return
-        # print(self.typeList)
-        # print(self.textList)
-        # Segments tokens into groups seperated by sequences, pipes, or redirections (formats the stream input)
+    def formatStream(self):
         text_list = []
         type_list = []
         tmp1 = []
@@ -367,42 +351,147 @@ class operator():
                 tmp2.append(self.typeList[n])
         text_list.append(tmp1)
         type_list.append(tmp2)
+        return [text_list, type_list]
+
+    def runApp(self, text_list, notComSub, pipeArg=None):
+        if notComSub:
+            if text_list[self.cycle][0] in APPLICATIONS:
+                tmp = eval(
+                    'self.'+text_list[self.cycle][0]+'('+str(text_list[self.cycle][1:])+','+str(pipeArg)+')')
+                return tmp
+            else:
+                print(
+                    f"COMP0010 shell: command not found: {text_list[self.cycle][0]} \n")
+                return
+        else:
+            if text_list[0] in APPLICATIONS:
+                tmp = eval(
+                    'self.'+text_list[0]+'('+str(text_list[1:])+')')
+                return tmp
+            else:
+                print(
+                    f"COMP0010 shell: command not found: {text_list[0]} \n")
+                return
+
+    def comSub(self, text_list, type_list):
+        for n in range(0, len(text_list[self.cycle])):
+            if type_list[self.cycle][n] == 20:
+                tmp_list = text_list[self.cycle][n].split()
+                tmp = self.runApp(tmp_list, False)
+                text_list[self.cycle][n] = ' '.join(tmp)
+            if type_list[self.cycle][n] == 19:
+                if text_list[self.cycle][n].count('`') % 2 != 0:
+                    try:
+                        while 1:
+                            inp = input()
+                    except KeyboardInterrupt:
+                        print('\n')
+                        return
+                elif text_list[self.cycle][n].count('`') < 2:
+                    continue
+                else:
+                    backq_split = text_list[self.cycle][n].split('`')
+                    count = 1
+                    while len(backq_split) > count:
+                        tmp_list = backq_split[count].split()
+                        tmp = self.runApp(tmp_list, False)
+                        backq_split[count] = ''.join(tmp)
+                        count += 2
+                    text_list[self.cycle][n] = '`'.join(backq_split)
+
+    def glob(self, pattern=None, path=None, args=None, basic=False):
+        result = []
+        if args:
+            for n in range(0, len(args)):
+                if '*' in args[n]:
+                    result = result + self.glob(args[n], None, None, True)
+                else:
+                    result.append(args[n])
+            return result
+        if not pattern or '*' not in pattern:
+            return result
+        for n in range(0, len(self.typeList[self.cycle])):
+            if (self.textList[self.cycle][n] == pattern):
+                if (self.textList[self.cycle][0] != 'find') and (self.typeList[self.cycle][n] == 19 or self.typeList[self.cycle][n] == 18):
+                    return result
+        pattern = list(pattern)
+        for n in range(0, len(pattern)):
+            if pattern[n] in ['^', '$', '.', '|', '?', '+', '(', ')', '[', ']', '{', '}']:
+                pattern[n] = '\\' + pattern[n]
+            if pattern[n] == '*':
+                pattern[n] = '.*'
+        pattern.append('$')
+        pattern = ''.join(pattern)
+        if not path:
+            path = './'
+        if basic:
+            for fileName in os.listdir(path):
+                if re.search(pattern, fileName):
+                    result.append(os.path.join(fileName))
+        else:
+            for dName, sdName, fList in os.walk(path):
+                if pattern:
+                    for fileName in fList:
+                        if re.search(pattern, fileName):
+                            result.append(os.path.join(dName, fileName))
+                else:
+                    for fileName in fList:
+                        result.append(os.path.join(dName, fileName))
+        return result
+
+    def printOutput(self, output, text_list):
+        if len(text_list) > self.cycle+1 and text_list[self.cycle+1] in ['|', '<', '>']:
+            return
+        if text_list[self.cycle][0] == 'ls':
+            if output:
+                for arg in output[:-1]:
+                    print(arg, end='      ')
+                print(output[-1])
+        elif output == None:
+            print()
+            return
+        else:
+            for output in output:
+                print(output)
+        if len(text_list) > self.cycle+1 and text_list[self.cycle+1] == ';':
+            return
+        print()
+        return
+
+    def run(self):
+        # Check if stdrin is empty and if it is end the execution of the function
+        if len(self.textList) == 0:
+            return
+
+        # Segments tokens into groups seperated by sequences, pipes, or redirections (formats the stream input)
+        output = self.formatStream()
+        if output:
+            text_list = output[0]
+            type_list = output[1]
+            self.textList = text_list.copy()
+            self.typeList = type_list.copy()
+        else:
+            return
 
         # Processes the actual stream input and applies logic based on class defined functions above
         tmp = None
         while len(text_list) > self.cycle:
-            if text_list[self.cycle] not in [';', '|', '<', '>']:
-                for n in range(0, len(text_list[self.cycle])):
-                    if type_list[self.cycle][n] == 20:
-                        tmp_list = text_list[self.cycle][n].split()
-                        tmp = self.runApp(tmp_list, False)
-                        text_list[self.cycle][n] = ' '.join(tmp)
-                    if type_list[self.cycle][n] == 19:
-                        if text_list[self.cycle][n].count('`') % 2 != 0:
-                            try:
-                                while 1:
-                                    inp = input()
-                            except KeyboardInterrupt:
-                                print('\n')
-                                return
-                        elif text_list[self.cycle][n].count('`') < 2:
-                            continue
-                        else:
-                            backq_split = text_list[self.cycle][n].split('`')
-                            count = 1
-                            while len(backq_split) > count:
-                                tmp_list = backq_split[count].split()
-                                tmp = self.runApp(tmp_list, False)
-                                backq_split[count] = ''.join(tmp)
-                                count += 2
-                            text_list[self.cycle][n] = '`'.join(backq_split)
-
-                tmp = self.runApp(text_list, True)
+            if text_list[self.cycle] == ';':
+                self.cycle += 1
+                continue
+            elif text_list[self.cycle] == '|':
+                self.cycle += 1
+                self.comSub(text_list, type_list)
+                tmp = self.runApp(text_list, True, tmp)
+            elif text_list[self.cycle] == '<':
+                pass
+            elif text_list[self.cycle] == '>':
+                pass
             else:
-                if text_list[self.cycle] == ';':
-                    pass
-                if text_list[self.cycle] == '|':
-                    pass
+                self.comSub(text_list, type_list)
+                tmp = self.runApp(text_list, True)
+            self.printOutput(tmp, text_list)
+
             self.cycle += 1
 
 
