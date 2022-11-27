@@ -6,9 +6,11 @@ RUN apt-get update \
     && apt-get -y install --no-install-recommends apt-utils dialog 2>&1 \
     && apt-get -y install git procps lsb-release 	libxml2-utils \
     && apt-get autoremove -y \
-    && apt-get clean -y
+    && apt-get clean -y 
 
 RUN /usr/local/bin/python -m pip install --upgrade pip
+RUN pip install antlr4-tools
+RUN pip install antlr4-python3-runtime==4.9.2
 
 COPY . /comp0010
 

@@ -30,7 +30,8 @@ class TestShell(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        dockerfile = ("FROM " + cls.SHELL_IMAGE + "\nWORKDIR " + cls.TEST_DIR).encode()
+        dockerfile = ("FROM " + cls.SHELL_IMAGE +
+                      "\nWORKDIR " + cls.TEST_DIR).encode()
         args = ["docker", "build", "-t", cls.TEST_IMAGE, "-"]
         p = subprocess.run(args, input=dockerfile, stdout=subprocess.DEVNULL)
         if p.returncode != 0:
@@ -520,11 +521,11 @@ class TestShell(unittest.TestCase):
         result = stdout.strip()
         self.assertEqual(result, "foo bar")
 
-    # def test_substitution_wc_find(self):
-    #     cmdline = "wc -l `find -name '*.txt'`"
-    #     stdout = self.eval(cmdline)
-    #     result = stdout.strip()
-    #     self.assertEqual(result, "26")
+    def test_substitution_wc_find(self):
+        cmdline = "wc -l `find -name '*.txt'`"
+        stdout = self.eval(cmdline)
+        result = stdout.strip()
+        self.assertEqual(result, "26")
 
     def test_substitution_sort_find(self):
         cmdline = "cat `find dir2 -name '*.txt'` | sort"
