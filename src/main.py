@@ -60,7 +60,6 @@ class operator():
             ls_dir = [os.getcwd()]
         try:
             result = []
-            print(ls_dir)
             for path in ls_dir:
                 if os.path.isdir(path):
                     for f in os.listdir(path):
@@ -82,8 +81,13 @@ class operator():
                 print()
                 return
         result = []
+        args = self.glob(None, None, args, True)
         for file_path in args:
             try:
+                if os.path.isdir(file_path):
+                    result.append(
+                        f"cat: {file_path}: is a directory")
+                    continue
                 f = open(file_path, 'r')
                 content = f.read()
                 f.close()
@@ -91,6 +95,9 @@ class operator():
             except FileNotFoundError:
                 result.append(
                     f"cat: {file_path}: no such file or directory")
+            except UnicodeDecodeError:
+                result.append(
+                    f"cat: {file_path}: is a binary file")
         return result
 
     def head(self, args, pipeArg):
@@ -112,6 +119,8 @@ class operator():
                 except ValueError:
                     print(f"head: illegal line count -- \'{args[1]}\'")
                     return
+
+        args = self.glob(None, None, args, True)
 
         if len(args) == 0:
             if pipeArg:
@@ -136,12 +145,17 @@ class operator():
                 if pipeArg:
                     lines = file_path.splitlines()
                 else:
+                    if os.path.isdir(file_path):
+                        result.append(
+                            f"cat: {file_path}: is a directory")
+                        continue
                     f = open(file_path, 'r')
                     if fs == None:
                         fs = file_path
                     if fs != file_path:
                         result.append('')
                     lines = f.read().splitlines()
+                    f.close()
                     if len(args) > 1:
                         result.append(f"==> {file_path} <==")
                 for line in lines[:index]:
@@ -169,6 +183,8 @@ class operator():
                     print(f"tail: illegal line count \'{args[1]}\'")
                     return
 
+        args = self.glob(None, None, args, True)
+
         if len(args) == 0:
             if pipeArg:
                 for n in pipeArg:
@@ -189,12 +205,17 @@ class operator():
                 if pipeArg:
                     lines = file_path.splitlines()
                 else:
+                    if os.path.isdir(file_path):
+                        result.append(
+                            f"cat: {file_path}: is a directory")
+                        continue
                     f = open(file_path, 'r')
                     if fs == None:
                         fs = file_path
                     if fs != file_path:
                         result.append(' ')
                     lines = f.read().splitlines()
+                    f.close()
                     if len(args) > 1:
                         result.append(f"==> {file_path} <==")
                 for line in lines[index:]:
@@ -218,17 +239,22 @@ class operator():
                 except KeyboardInterrupt:
                     print()
                     return
-
         result = []
         pattern = args[0]
         args.pop(0)
+        args = self.glob(None, None, args, True)
         for file_path in args:
             try:
                 if pipeArg:
                     lines = file_path.splitlines()
                 else:
+                    if os.path.isdir(file_path):
+                        result.append(
+                            f"cat: {file_path}: is a directory")
+                        continue
                     f = open(file_path, 'r')
                     lines = f.read().splitlines()
+                    f.close()
                 for line in lines:
                     match = re.search(pattern, line)
                     if match:
@@ -273,6 +299,7 @@ class operator():
                 else:
                     f = open(args[0], 'r')
                     lines = f.read().splitlines()
+                    f.close()
                 if case:
                     n = 0
                     while len(lines)-1 > n:
@@ -296,7 +323,7 @@ class operator():
     def find(self, args, pipeArg):
         pattern = None
         if len(args) == 0:
-            print("find: please enter a file path")
+            print("find: please enter a file path or pattern")
             return
         if len(args) > 1:
             if args[1] == '-name':
@@ -307,19 +334,31 @@ class operator():
                     print(f"find: {args[3]}: unkown primary or operator")
                     return
             elif args[0] == '-name':
-                print("find: illegal option --n")
-                return
+                args.insert(0, './')
             else:
                 print("find: too many arguements")
                 return
+        if len(args) == 1:
+            if args[0] == '-name':
+                print("find: illegal option --n")
+            else:
+                args.append('-name')
+                args.append('*')
 
         result = []
-        if os.path.exists(args[0]):
-            result = self.glob(args[2], args[0])
-            return result
-        else:
-            print(f"find: {args[0]}: no such file or directory")
-            return
+        pattern = args[2]
+        args = self.glob(None, None, args[:-1], True)
+        args.append(pattern)
+        for filepath in args[:-2]:
+            if os.path.exists(filepath):
+                for n in self.glob(args[-1], filepath):
+                    result.append(n)
+                if len(result) == 0:
+                    result.append(f"find: no matches found: {args[-1]}")
+            else:
+                print(f"find: {filepath}: no such file or directory")
+                return
+        return result
 
     # EVALUATION
 
@@ -361,7 +400,7 @@ class operator():
                 return tmp
             else:
                 print(
-                    f"COMP0010 shell: command not found: {text_list[self.cycle][0]} \n")
+                    f"COMP0010 shell: command not found: {text_list[self.cycle][0]}")
                 return
         else:
             if text_list[0] in APPLICATIONS:
@@ -370,7 +409,7 @@ class operator():
                 return tmp
             else:
                 print(
-                    f"COMP0010 shell: command not found: {text_list[0]} \n")
+                    f"COMP0010 shell: command not found: {text_list[0]}")
                 return
 
     def comSub(self, text_list, type_list):
@@ -413,6 +452,7 @@ class operator():
         for n in range(0, len(self.typeList[self.cycle])):
             if (self.textList[self.cycle][n] == pattern):
                 if (self.textList[self.cycle][0] != 'find') and (self.typeList[self.cycle][n] == 19 or self.typeList[self.cycle][n] == 18):
+                    result.append(self.textList[self.cycle][n])
                     return result
         pattern = list(pattern)
         for n in range(0, len(pattern)):
@@ -448,14 +488,12 @@ class operator():
                     print(arg, end='      ')
                 print(output[-1])
         elif output == None:
-            print()
             return
         else:
             for output in output:
                 print(output)
         if len(text_list) > self.cycle+1 and text_list[self.cycle+1] == ';':
             return
-        print()
         return
 
     def run(self):
@@ -476,23 +514,61 @@ class operator():
         # Processes the actual stream input and applies logic based on class defined functions above
         tmp = None
         while len(text_list) > self.cycle:
-            if text_list[self.cycle] == ';':
+            if (self.cycle+1 < len(text_list)) and text_list[self.cycle+1] == '<':
+                if self.cycle+2 > len(text_list):
+                    print("Expected arguement after redirection")
+                else:
+                    try:
+                        if os.path.isdir(text_list[self.cycle+2][0]):
+                            print(
+                                f"{text_list[self.cycle+2][0]} is a directory")
+                            return
+                        f = open(text_list[self.cycle+2][0], 'r')
+                        content = f.read()
+                        f.close()
+                        self.comSub(text_list, type_list)
+                        tmp = self.runApp(text_list, True, [content])
+                        self.cycle += 3
+                        continue
+                    except FileNotFoundError:
+                        print(f"{text_list[self.cycle+2][0]}: no such file")
+                        return
+            elif text_list[self.cycle] == ';':
                 self.cycle += 1
                 continue
             elif text_list[self.cycle] == '|':
-                self.cycle += 1
-                self.comSub(text_list, type_list)
-                tmp = self.runApp(text_list, True, tmp)
-            elif text_list[self.cycle] == '<':
-                pass
+                if self.cycle+1 > len(text_list):
+                    print("Expected arguement after pipe")
+                else:
+                    self.cycle += 1
+                    self.comSub(text_list, type_list)
+                    tmp = self.runApp(text_list, True, tmp)
             elif text_list[self.cycle] == '>':
-                pass
+                if self.cycle+1 > len(text_list):
+                    print("Expected arguement after redirection")
+                else:
+                    self.cycle += 1
+                    try:
+                        if os.path.isdir(text_list[self.cycle][0]):
+                            print(f"{text_list[self.cycle][0]} is a directory")
+                            return
+                        content = '\n'.join(tmp)
+                        content = content + "\n"
+                        f = open(text_list[self.cycle][0], 'w')
+                        f.write(content)
+                        f.close()
+                        self.cycle += 1
+                        continue
+                    except FileNotFoundError:
+                        print(f"{text_list[self.cycle][0]}: no such file")
+                        return
             else:
                 self.comSub(text_list, type_list)
                 tmp = self.runApp(text_list, True)
-            self.printOutput(tmp, text_list)
 
+            self.printOutput(tmp, text_list)
             self.cycle += 1
+        print()
 
 
 if __name__ == "__main__":
