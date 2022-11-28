@@ -9,6 +9,8 @@ RUN apt-get update \
     && apt-get clean -y
 
 RUN /usr/local/bin/python -m pip install --upgrade pip
+RUN pip install antlr4-python3-runtime==4.9.2
+RUN pip install antlr4-tools
 
 COPY . /comp0010
 
