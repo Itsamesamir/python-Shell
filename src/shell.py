@@ -49,7 +49,7 @@ class operator():
     def echo(self, args, pipeArg):
         result = []
         args = self.glob(None, None, args, True)
-        for m in range(0,len(args)):
+        for m in range(0, len(args)):
             tmp = list(args[m])
             n = 0
             while n < len(tmp):
@@ -369,20 +369,21 @@ class operator():
                 args.append('*')
 
         result = []
-        pattern = args[2]
-        args = self.glob(None, None, args[:-1], True)
+        pattern = args[-1]
+        args = self.glob(None, None, args[:-2], True)
+        args.append('-name')
         args.append(pattern)
         for filepath in args[:-2]:
             if os.path.exists(filepath):
-                for n in self.glob(args[-1], filepath):
+                for n in self.glob(pattern, filepath):
                     result.append(n)
                 if len(result) == 0:
-                    result.append(f"find: no matches found: {args[-1]}")
+                    result.append(f"find: no matches found: {pattern}")
             else:
                 print(f"find: {filepath}: no such file or directory")
                 return
         return result
-    
+
     def sort(self, args, pipeArg):
         if len(args) == 0:
             try:
@@ -407,7 +408,7 @@ class operator():
                 result.append(
                     f"sort: {file_path}: no such file or directory")
         return result
-    
+
     def cut(self, args, pipeArg):
         bytes_list = []
         if pipeArg:
@@ -418,9 +419,9 @@ class operator():
         else:
             if args[0] == '-b':
                 try:
-                    args.pop(0)     
+                    args.pop(0)
                     bytes_list = "".join(args.pop(0)).split(",")
-                    
+
                 except IndexError:
                     print(f"cut: option requires an argument -- n \n")
                     return
@@ -429,7 +430,7 @@ class operator():
                     return
         result = []
         fs = None
-        lines=[]
+        lines = []
         tmp = []
         for file_path in args:
             try:
@@ -445,32 +446,30 @@ class operator():
                     f.close()
                 for line in lines:
                     if line.isspace() or line == "":
-                        result.append(line)      
+                        result.append(line)
                         continue
                     s = line.encode("utf8")
                     for index, x in enumerate(bytes_list):
-        
+
                         if any(chara in ['-'] for chara in x):
-                            if x[0]=="-":
+                            if x[0] == "-":
                                 tmp.append(s[:int(x.split("-")[1])])
-                            elif x[len(x)-1]=="-" or  int(x.split("-")[1]) > len(s):
+                            elif x[len(x)-1] == "-" or int(x.split("-")[1]) > len(s):
                                 tmp.append(s[int(x.split("-")[0])-1:])
-                            else:        
-                                tmp.append(s[int(x.split("-")[0])-1:int(x.split("-")[1])]) 
+                            else:
+                                tmp.append(
+                                    s[int(x.split("-")[0])-1:int(x.split("-")[1])])
                         else:
                             a = s.decode("utf8")[int(x)-1]
                             tmp.append(a.encode("utf8"))
-                        
-                        tmp[index]=tmp[index].decode("utf8")
-                    result.append("".join(tmp)) 
-                    tmp.clear()    
-                
-                    
+
+                        tmp[index] = tmp[index].decode("utf8")
+                    result.append("".join(tmp))
+                    tmp.clear()
+
             except FileNotFoundError:
                 result.append(f"head: {file_path}: no such file or directory")
         return result
-    
-
 
     # EVALUATION
 
@@ -481,10 +480,11 @@ class operator():
         tmp2 = []
         for n in range(0, len(self.textList)):
             if self.textList[n] in [';', '|', '<', '>']:
-                text_list.append(tmp1.copy())
-                type_list.append(tmp2.copy())
-                tmp1.clear()
-                tmp2.clear()
+                if len(tmp1) != 0:
+                    text_list.append(tmp1.copy())
+                    type_list.append(tmp2.copy())
+                    tmp1.clear()
+                    tmp2.clear()
                 text_list.append(self.textList[n])
                 type_list.append(self.typeList[n])
             else:
@@ -497,9 +497,18 @@ class operator():
                         return
                 if self.typeList[n] in [18, 19, 20]:
                     tmp1.append(self.textList[n][1:-1])
+                    tmp2.append(self.typeList[n])
+                elif 0 < self.typeList[n] < 14:
+                    if len(tmp1) != 0:
+                        text_list.append(tmp1.copy())
+                        type_list.append(tmp2.copy())
+                        tmp1.clear()
+                        tmp2.clear()
+                    tmp1.append(self.textList[n])
+                    tmp2.append(self.typeList[n])
                 else:
                     tmp1.append(self.textList[n])
-                tmp2.append(self.typeList[n])
+                    tmp2.append(self.typeList[n])
         text_list.append(tmp1)
         type_list.append(tmp2)
         return [text_list, type_list]
@@ -559,7 +568,7 @@ class operator():
                 else:
                     result.append(args[n])
             return result
-        if not pattern or '*' not in pattern:
+        if not pattern:
             return result
         for n in range(0, len(self.typeList[self.cycle])):
             if (self.textList[self.cycle][n] == pattern):
@@ -567,11 +576,19 @@ class operator():
                     result.append(self.textList[self.cycle][n])
                     return result
         pattern = list(pattern)
-        for n in range(0, len(pattern)):
+        n = 0
+        while n < len(pattern):
             if pattern[n] in ['^', '$', '.', '|', '?', '+', '(', ')', '[', ']', '{', '}']:
                 pattern[n] = '\\' + pattern[n]
             if pattern[n] == '*':
+                if os.path.isdir(''.join(pattern[:n])):
+                    path = ''.join(pattern[:n])
+                    del pattern[:n]
+                    n = 0
                 pattern[n] = '.*'
+            n += 1
+        if '.*' not in pattern:
+            pattern.insert(0, '^')
         pattern.append('$')
         pattern = ''.join(pattern)
         if not path:
@@ -579,7 +596,10 @@ class operator():
         if basic:
             for fileName in os.listdir(path):
                 if re.search(pattern, fileName):
-                    result.append(os.path.join(fileName))
+                    if path == './':
+                        result.append(fileName)
+                    else:
+                        result.append(os.path.join(path, fileName))
         else:
             for dName, sdName, fList in os.walk(path):
                 if pattern:
@@ -698,4 +718,3 @@ if __name__ == "__main__":
             inp = input("> ")
             evaluator = operator(inp)
             evaluator.run()
-            
