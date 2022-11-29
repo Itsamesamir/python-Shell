@@ -215,8 +215,6 @@ class operator():
         if output:
             text_list = output[0]
             type_list = output[1]
-            self.textList = text_list.copy()
-            self.typeList = type_list.copy()
         else:
             return
 
@@ -232,23 +230,20 @@ class operator():
                         f = open(text_list[self.cycle+1][0], 'r')
                         content = f.read()
                         f.close()
-                        self.cycle += 1
+                        self.cycle += 2
                         self.comSub(text_list, type_list)
-                        self.cycle += 1
                         tmp = self.runApp(text_list, [content[:-1]])
                         self.cycle += 1
                         continue
                     except FileNotFoundError:
-                        print(f"{text_list[self.cycle+2][0]}: no such file \n")
-                        return
+                        raise FileNotFoundError(
+                            f"{text_list[self.cycle+2][0]}: no such file \n")
                     except IsADirectoryError:
-                        print(
+                        raise IsADirectoryError(
                             f"{text_list[self.cycle+2][0]} is a directory \n")
-                        return
-            if (self.cycle+1 < len(text_list)) and text_list[self.cycle+1] == '<':
+            elif (self.cycle+1 < len(text_list)) and text_list[self.cycle+1] == '<':
                 if self.cycle+2 > len(text_list):
-                    print("Expected arguement after redirection \n")
-                    return
+                    raise ValueError("Expected arguement after redirection \n")
                 else:
                     try:
                         f = open(text_list[self.cycle+2][0], 'r')
@@ -259,12 +254,11 @@ class operator():
                         self.cycle += 3
                         continue
                     except FileNotFoundError:
-                        print(f"{text_list[self.cycle+2][0]}: no such file \n")
-                        return
+                        raise FileNotFoundError(
+                            f"{text_list[self.cycle+2][0]}: no such file \n")
                     except IsADirectoryError:
-                        print(
+                        raise IsADirectoryError(
                             f"{text_list[self.cycle+2][0]} is a directory \n")
-                        return
             elif text_list[self.cycle] == ';':
                 if hidden:
                     self.cycle += 1
@@ -275,18 +269,16 @@ class operator():
                 continue
             elif text_list[self.cycle] == '|':
                 if self.cycle+1 > len(text_list):
-                    print("Expected arguement after pipe")
+                    raise ValueError("Expected arguement after pipe")
                 else:
                     self.cycle += 1
                     self.comSub(text_list, type_list)
                     tmp = self.runApp(text_list, tmp)
             elif text_list[self.cycle] == '>':
                 if self.cycle+1 > len(text_list):
-                    print("Expected arguement after redirection \n")
-                    return
+                    raise ValueError("Expected arguement after redirection \n")
                 elif len(text_list) < 2:
-                    print("Expected arguement after redirection \n")
-                    return
+                    raise ValueError("Expected arguement after redirection \n")
                 else:
                     self.cycle += 1
                     try:
@@ -302,12 +294,11 @@ class operator():
                         tmp = None
                         continue
                     except FileNotFoundError:
-                        print(f"{text_list[self.cycle][0]}: no such file")
-                        return
+                        raise FileNotFoundError(
+                            f"{text_list[self.cycle][0]}: no such file")
                     except IsADirectoryError:
-                        print(
+                        raise IsADirectoryError(
                             f"{text_list[self.cycle+2][0]} is a directory \n")
-                        return
             else:
                 self.comSub(text_list, type_list)
                 tmp = self.runApp(text_list)

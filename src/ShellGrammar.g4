@@ -49,7 +49,7 @@ QUOTED : SINGLEQ | DOUBLEQ | BACKQ;
 NEW_LINE :  ('\n'|'\r')->skip;
 WHITESPACE: (' ')->skip;
 UNQUOTED: ~(' '|'\n'|'\r'|'"'|'\''|'`'|'|'|';'|'<'|'>')+;
-NON_KEYWORD:~(' '|'\n'|'\r'|'"'|'\''|'`'|'|'|';'|'<'|'>')+;
+NON_KEYWORD: ~(' '|'\n'|'\r'|'"'|'\''|'`'|'|'|';'|'<'|'>')+;
 NON_SINGLE_QUOTE :  (~ ('\'' |'\n' | '\r')).*? ;
 NON_BACK_QUOTE :  (~('`' | '\n' | '\r')).*? ;
 DOUBLE_QUOTE_CONTENT: (~('"' | '`' |'\n' | '\r')) ;
