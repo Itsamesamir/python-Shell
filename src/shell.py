@@ -23,30 +23,32 @@ class operator():
         self.cycle = 0
 
     # APPLICATIONS
-    def pwd(self, args, pipeArg):
+    def pwd(self, args, argTypes, pipeArg):
         if len(args) > 0:
-            print("pwd: too many arguments")
-            return
+            raise TypeError("pwd: too many arguments")
         return [os.getcwd()]
 
-    def exit(self, args, pipeArg):
+    def exit(self, args, argTypes, pipeArg):
         print()
         sys.exit(0)
 
-    def cd(self, args, pipeArg):
+    def cd(self, args, argTypes, pipeArg):
         if len(args) > 1:
-            print(f"cd: string not in pwd: {args[0]}")
-            return
+            raise TypeError(f"cd: string not in pwd: {args[0]}")
         try:
             if len(args) == 0:
                 os.chdir('/')
             else:
                 os.chdir(args[0])
         except FileNotFoundError:
-            print(f"cd: no such file or directory {args[0]}")
-            return
+            raise TypeError(f"cd: no such file or directory {args[0]}")
 
-    def echo(self, args, pipeArg):
+    def echo(self, args, argTypes, pipeArg):
+        if not args:
+            if len(self.textList) > self.cycle+1:
+                if len(self.textList[self.cycle+1]) == 1 and self.textList[self.cycle+1][0] in APPLICATIONS:
+                    args = [self.textList[self.cycle+1][0]]
+                    self.cycle += 1
         result = []
         args = self.glob(None, None, args, True)
         for m in range(0, len(args)):
@@ -61,12 +63,11 @@ class operator():
         result = ' '.join(result)
         return [result]
 
-    def ls(self, args, pipeArg):
+    def ls(self, args, argTypes, pipeArg):
         if len(args) == 1:
             ls_dir = self.glob(None, None, args, True)
         elif len(args) > 1:
-            print(f"ls: string not in pwd: {args[0]}")
-            return
+            raise TypeError(f"ls: string not in pwd: {args[0]}")
         else:
             ls_dir = [os.getcwd()]
         try:
@@ -79,13 +80,12 @@ class operator():
                         else:
                             result.append(f)
                 else:
-                    result.append(path)
+                    raise TypeError(f"ls: no such file or directory {path}")
             return result
         except FileNotFoundError:
-            print(f"ls: no such file or directory {args[0]}")
-            return
+            raise TypeError(f"ls: no such file or directory {args[0]}")
 
-    def cat(self, args, pipeArg):
+    def cat(self, args, argTypes, pipeArg):
         result = []
         content = None
         if len(args) == 0:
@@ -118,7 +118,7 @@ class operator():
                     f"cat: {file_path}: is a binary file")
         return result
 
-    def head(self, args, pipeArg):
+    def head(self, args, argTypes, pipeArg):
         index = 10
         if len(args) == 0:
             pass
@@ -127,16 +127,14 @@ class operator():
                 try:
                     index = int(args[1])
                     if index < 0:
-                        print(f"head: illegal line count -- {index}")
-                        return
+                        raise TypeError(f"head: illegal line count -- {index}")
                     args.pop(0)
                     args.pop(0)
                 except IndexError:
-                    print(f"head: option requires an arguement -- n")
-                    return
+                    raise TypeError(f"head: option requires an arguement -- n")
                 except ValueError:
-                    print(f"head: illegal line count -- \'{args[1]}\'")
-                    return
+                    raise TypeError(
+                        f"head: illegal line count -- \'{args[1]}\'")
 
         args = self.glob(None, None, args, True)
 
@@ -182,7 +180,7 @@ class operator():
                 result.append(f"head: {file_path}: no such file or directory")
         return result
 
-    def tail(self, args, pipeArg):
+    def tail(self, args, argTypes, pipeArg):
         index = -10
         if len(args) == 0:
             pass
@@ -195,11 +193,9 @@ class operator():
                     if index > 0:
                         index *= -1
                 except IndexError:
-                    print(f"tail: option requires an arguement -- n")
-                    return
+                    raise TypeError(f"tail: option requires an arguement -- n")
                 except ValueError:
-                    print(f"tail: illegal line count \'{args[1]}\'")
-                    return
+                    raise TypeError(f"tail: illegal line count \'{args[1]}\'")
 
         args = self.glob(None, None, args, True)
 
@@ -245,7 +241,7 @@ class operator():
                 result.append(f"head: {file_path}: no such file or directory")
         return result
 
-    def grep(self, args, pipeArg):
+    def grep(self, args, argTypes, pipeArg):
         if len(args) == 0:
             print("grep: no arguments were entered")
             return
@@ -284,13 +280,13 @@ class operator():
                         elif pipeArg:
                             result.append(line)
                         else:
-                            result.append(f"{file_path}: {line}")
+                            result.append(f"{file_path}:{line}")
             except FileNotFoundError:
                 result.append(
                     f"grep: {file_path}: no such file or directory")
         return result
 
-    def uniq(self, args, pipeArg):
+    def uniq(self, args, argTypes, pipeArg):
         case = False
         if len(args) == 0:
             pass
@@ -301,8 +297,7 @@ class operator():
 
         if len(args) == 0:
             if pipeArg:
-                for n in pipeArg:
-                    args.append(n)
+                args.append("\n".join(pipeArg))
             else:
                 try:
                     while 1:
@@ -313,8 +308,7 @@ class operator():
                     return
 
         if len(args) > 1:
-            print(f"uniq: too many arguments")
-            return
+            raise TypeError(f"uniq: too many arguments")
         else:
             try:
                 if pipeArg:
@@ -327,7 +321,7 @@ class operator():
                     n = 0
                     while len(lines)-1 > n:
                         if lines[n].lower() == lines[n+1].lower():
-                            lines.pop(n)
+                            lines.pop(n+1)
                             continue
                         n += 1
                 else:
@@ -340,27 +334,24 @@ class operator():
 
                 return [line for line in lines]
             except FileNotFoundError:
-                print(f"uniq: {args[0]}: no such file or directory")
-                return
+                raise TypeError(f"uniq: {args[0]}: no such file or directory")
 
-    def find(self, args, pipeArg):
+    def find(self, args, argTypes, pipeArg):
         pattern = None
         if len(args) == 0:
-            print("find: please enter a file path or pattern")
-            return
+            raise TypeError("find: please enter a file path or pattern")
         if len(args) > 1:
             if args[1] == '-name':
                 if len(args) == 2:
-                    print("find: -name requires additional arguements")
-                    return
+                    raise TypeError(
+                        "find: -name requires additional arguements")
                 elif len(args) > 3:
-                    print(f"find: {args[3]}: unkown primary or operator")
-                    return
+                    raise TypeError(
+                        f"find: {args[3]}: unkown primary or operator")
             elif args[0] == '-name':
                 args.insert(0, './')
             else:
-                print("find: too many arguements")
-                return
+                raise TypeError("find: too many arguements")
         if len(args) == 1:
             if args[0] == '-name':
                 print("find: illegal option --n")
@@ -380,20 +371,27 @@ class operator():
                 if len(result) == 0:
                     result.append(f"find: no matches found: {pattern}")
             else:
-                print(f"find: {filepath}: no such file or directory")
-                return
+                raise TypeError(f"find: {filepath}: no such file or directory")
         return result
 
-    def sort(self, args, pipeArg):
+    def sort(self, args, argTypes, pipeArg):
+        result = []
+        lines = []
+        if pipeArg:
+            pipeArg = '\n'.join(pipeArg)
+            lines = pipeArg.splitlines()
+            result = sorted(lines, key=None, reverse=False)
+            return result
         if len(args) == 0:
             try:
                 while 1:
                     inp = input()
                     print(inp)
             except KeyboardInterrupt:
-                print('\n')
+                print()
                 return
-        result = []
+        args = self.glob(None, None, args, True)
+
         words = []
         for file_path in args:
             try:
@@ -409,7 +407,7 @@ class operator():
                     f"sort: {file_path}: no such file or directory")
         return result
 
-    def cut(self, args, pipeArg):
+    def cut(self, args, argTypes, pipeArg):
         bytes_list = []
         if pipeArg:
             for arg in pipeArg:
@@ -423,11 +421,11 @@ class operator():
                     bytes_list = "".join(args.pop(0)).split(",")
 
                 except IndexError:
-                    print(f"cut: option requires an argument -- n \n")
-                    return
+                    raise TypeError(
+                        f"cut: option requires an argument -- n \n")
                 except ValueError:
-                    print(f"cut: illegal line count \'{args[1]}\' \n")
-                    return
+                    raise TypeError(
+                        f"cut: illegal line count \'{args[1]}\' \n")
         result = []
         fs = None
         lines = []
@@ -449,13 +447,40 @@ class operator():
                         result.append(line)
                         continue
                     s = line.encode("utf8")
+                    lowc = 0
+                    highc = 0
                     for index, x in enumerate(bytes_list):
 
                         if any(chara in ['-'] for chara in x):
                             if x[0] == "-":
-                                tmp.append(s[:int(x.split("-")[1])])
+                                if highc == 0:
+                                    tmp.append(s[:int(x.split("-")[1])])
+                                    high = int(x.split("-")[1])
+                                    changehigh = index
+                                    highc += 1
+                                else:
+                                    if int(x.split("-")[1]) > high:
+                                        high = int(x.split("-")[1])
+                                        tmp[changehigh] = s[:int(
+                                            x.split("-")[1])]
+                                        changehigh = index
+                                    else:
+                                        continue
                             elif x[len(x)-1] == "-" or int(x.split("-")[1]) > len(s):
-                                tmp.append(s[int(x.split("-")[0])-1:])
+                                if lowc == 0:
+                                    tmp.append(s[int(x.split("-")[0])-1:])
+                                    low = int(x.split("-")[0])-1
+                                    changelow = index
+                                    lowc += 1
+                                else:
+                                    if int(x.split("-")[0])-1 < low:
+                                        low = int(x.split("-")[0])-1
+                                        tmp[changelow] = s[int(
+                                            x.split("-")[0])-1:]
+                                        changelow = index
+                                    else:
+                                        continue
+
                             else:
                                 tmp.append(
                                     s[int(x.split("-")[0])-1:int(x.split("-")[1])])
@@ -509,55 +534,39 @@ class operator():
                 else:
                     tmp1.append(self.textList[n])
                     tmp2.append(self.typeList[n])
-        text_list.append(tmp1)
-        type_list.append(tmp2)
+        if len(tmp1) != 0:
+            text_list.append(tmp1)
+            type_list.append(tmp2)
         return [text_list, type_list]
 
-    def runApp(self, text_list, notComSub, pipeArg=None):
-        if notComSub:
-            if text_list[self.cycle][0] in APPLICATIONS:
-                tmp = eval(
-                    'self.'+text_list[self.cycle][0]+'('+str(text_list[self.cycle][1:])+','+str(pipeArg)+')')
-                return tmp
-            else:
-                print(
-                    f"COMP0010 shell: command not found: {text_list[self.cycle][0]}")
-                return
+    def runApp(self, text_list, type_list, pipeArg=None):
+        if text_list[self.cycle][0] in APPLICATIONS:
+            tmp = eval(
+                'self.'+text_list[self.cycle][0]+'('+str(text_list[self.cycle][1:])+','+str(type_list[self.cycle][1:])+','+str(pipeArg)+')')
+            return tmp
         else:
-            if text_list[0] in APPLICATIONS:
-                tmp = eval(
-                    'self.'+text_list[0]+'('+str(text_list[1:])+','+str(pipeArg)+')')
-                return tmp
-            else:
-                print(
-                    f"COMP0010 shell: command not found: {text_list[0]}")
-                return
+            print(
+                f"COMP0010 shell: command not found: {text_list[self.cycle][0]}")
+            return
 
     def comSub(self, text_list, type_list):
         for n in range(0, len(text_list[self.cycle])):
             if type_list[self.cycle][n] == 20:
-                tmp_list = text_list[self.cycle][n].split()
-                tmp = self.runApp(tmp_list, False)
-                text_list[self.cycle][n] = ' '.join(tmp)
+                tmp_opp = operator(text_list[self.cycle][n])
+                tmp_result = tmp_opp.run(True)
+                text_list[self.cycle][n] = tmp_result[0]
             if type_list[self.cycle][n] == 19:
-                if text_list[self.cycle][n].count('`') % 2 != 0:
-                    try:
-                        while 1:
-                            inp = input()
-                    except KeyboardInterrupt:
-                        print('\n')
-                        return
-                elif text_list[self.cycle][n].count('`') < 2:
+                if '`' not in text_list[self.cycle][n]:
                     continue
                 else:
                     backq_split = text_list[self.cycle][n].split('`')
                     count = 1
                     while len(backq_split) > count:
-                        tmp_list = backq_split[count].split()
-                        tmp = self.runApp(tmp_list, False)
-                        backq_split[count] = ''.join(tmp)
+                        tmp_opp = operator(backq_split[count])
+                        tmp_result = tmp_opp.run(True)
+                        backq_split[count] = tmp_result[0]
                         count += 2
-                    text_list[self.cycle][n] = '`'.join(backq_split)
+                    text_list[self.cycle][n] = ''.join(backq_split)
 
     def glob(self, pattern=None, path=None, args=None, basic=False):
         result = []
@@ -611,24 +620,14 @@ class operator():
                         result.append(os.path.join(dName, fileName))
         return result
 
-    def printOutput(self, output, text_list):
-        if len(text_list) > self.cycle+1 and text_list[self.cycle+1] in ['|', '>']:
-            return
-        if text_list[self.cycle][0] == 'ls':
-            if output:
-                for arg in output[:-1]:
-                    print(arg)
-                print(output[-1])
-        elif output == None:
-            return
+    def returnOutput(self, output):
+        if output:
+            for args in output:
+                print(args)
         else:
-            for output in output:
-                print(output)
-        if len(text_list) > self.cycle+1 and text_list[self.cycle+1] == ';':
-            return
-        return
+            pass
 
-    def run(self):
+    def run(self, hidden=False):
         # Check if stdrin is empty and if it is end the execution of the function
         if len(self.textList) == 0:
             return
@@ -646,27 +645,54 @@ class operator():
         # Processes the actual stream input and applies logic based on class defined functions above
         tmp = None
         while len(text_list) > self.cycle:
-            if (self.cycle+1 < len(text_list)) and text_list[self.cycle+1] == '<':
-                if self.cycle+2 > len(text_list):
-                    print("Expected arguement after redirection")
+            if text_list[0] == '<':
+                if len(text_list) < 2:
+                    print("Expected arguement after redirection \n")
+                    return
                 else:
                     try:
-                        if os.path.isdir(text_list[self.cycle+2][0]):
-                            print(
-                                f"{text_list[self.cycle+2][0]} is a directory")
-                            return
+                        f = open(text_list[self.cycle+1][0], 'r')
+                        content = f.read()
+                        f.close()
+                        self.cycle += 1
+                        self.comSub(text_list, type_list)
+                        self.cycle += 1
+                        tmp = self.runApp(text_list, type_list, [content[:-1]])
+                        self.cycle += 1
+                        continue
+                    except FileNotFoundError:
+                        print(f"{text_list[self.cycle+2][0]}: no such file \n")
+                        return
+                    except IsADirectoryError:
+                        print(
+                            f"{text_list[self.cycle+2][0]} is a directory \n")
+                        return
+            if (self.cycle+1 < len(text_list)) and text_list[self.cycle+1] == '<':
+                if self.cycle+2 > len(text_list):
+                    print("Expected arguement after redirection \n")
+                    return
+                else:
+                    try:
                         f = open(text_list[self.cycle+2][0], 'r')
                         content = f.read()
                         f.close()
                         self.comSub(text_list, type_list)
-                        tmp = self.runApp(text_list, True, [content[:-1]])
-                        self.printOutput(tmp, text_list)
+                        tmp = self.runApp(text_list, type_list, [content[:-1]])
                         self.cycle += 3
                         continue
                     except FileNotFoundError:
-                        print(f"{text_list[self.cycle+2][0]}: no such file")
+                        print(f"{text_list[self.cycle+2][0]}: no such file \n")
+                        return
+                    except IsADirectoryError:
+                        print(
+                            f"{text_list[self.cycle+2][0]} is a directory \n")
                         return
             elif text_list[self.cycle] == ';':
+                if hidden:
+                    self.cycle += 1
+                    tmp = [tmp[0] + ' ' + self.runApp(text_list, type_list)[0]]
+                else:
+                    self.returnOutput(tmp)
                 self.cycle += 1
                 continue
             elif text_list[self.cycle] == '|':
@@ -675,10 +701,14 @@ class operator():
                 else:
                     self.cycle += 1
                     self.comSub(text_list, type_list)
-                    tmp = self.runApp(text_list, True, tmp)
+                    tmp = self.runApp(text_list, type_list, tmp)
             elif text_list[self.cycle] == '>':
                 if self.cycle+1 > len(text_list):
-                    print("Expected arguement after redirection")
+                    print("Expected arguement after redirection \n")
+                    return
+                elif len(text_list) < 2:
+                    print("Expected arguement after redirection \n")
+                    return
                 else:
                     self.cycle += 1
                     try:
@@ -691,16 +721,24 @@ class operator():
                         f.write(content)
                         f.close()
                         self.cycle += 1
+                        tmp = None
                         continue
                     except FileNotFoundError:
                         print(f"{text_list[self.cycle][0]}: no such file")
                         return
+                    except IsADirectoryError:
+                        print(
+                            f"{text_list[self.cycle+2][0]} is a directory \n")
+                        return
             else:
                 self.comSub(text_list, type_list)
-                tmp = self.runApp(text_list, True)
+                tmp = self.runApp(text_list, type_list)
 
-            self.printOutput(tmp, text_list)
             self.cycle += 1
+        if hidden:
+            return tmp
+        else:
+            self.returnOutput(tmp)
         print()
 
 
