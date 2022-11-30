@@ -165,9 +165,6 @@ class operator():
         else:
             self.cycle += 1
             try:
-                if os.path.isdir(text_list[self.cycle][0]):
-                    print(f"{text_list[self.cycle][0]} is a directory")
-                    return
                 content = '\n'.join(tmp)
                 content = content + "\n"
                 f = open(text_list[self.cycle][0], 'w')

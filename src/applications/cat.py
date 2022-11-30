@@ -27,7 +27,7 @@ def cat(args, pipeArg):
             raise FileNotFoundError(
                 f"cat: {file_path}: no such file or directory \n")
         except IsADirectoryError:
-            raise IsADirectoryError(f"cat: {file_path}: is a directory \n")
+            result.append(f"cat: {file_path}: is a directory")
         except UnicodeDecodeError:
             raise UnicodeDecodeError(
                 f"cat: {file_path}: is a binary file \n")

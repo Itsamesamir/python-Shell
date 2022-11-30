@@ -26,8 +26,8 @@ def ls(args, pipeArg):
             if len(args) > 1:
                 result.append('')
 
-        if result[-1] == '':
+        if result and result[-1] == '':
             result.pop()
         return result
     except FileNotFoundError:
-        raise FileNotFoundError(f"ls: no such file or directory {args[0]} \n")
+        raise FileNotFoundError(f"ls: no such file or directory {path} \n")

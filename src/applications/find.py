@@ -10,17 +10,17 @@ def find(args, pipeArg):
         if args[1] == '-name':
             if len(args) == 2:
                 raise ValueError(
-                    "find: -name requires additional arguements \n")
+                    "find: -name requires additional arguments \n")
             elif len(args) > 3:
                 raise ValueError(
                     f"find: {args[3]}: unkown primary or operator \n")
         elif args[0] == '-name':
             args.insert(0, './')
         else:
-            raise ValueError("find: too many arguements \n")
+            raise ValueError("find: too many arguments \n")
     if len(args) == 1:
         if args[0] == '-name':
-            print("find: illegal option --n")
+            raise ValueError("find: illegal option --n")
         else:
             args.append('-name')
             args.append('*')

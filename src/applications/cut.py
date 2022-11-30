@@ -7,7 +7,7 @@ def cut(args, pipeArg):
         for arg in pipeArg:
             args.append(arg)
     if len(args) == 0:
-        raise ValueError(f"cut: no arguements specified \n")
+        raise ValueError(f"cut: no arguments specified \n")
     else:
         if args[0] == '-b':
             try:
@@ -16,10 +16,10 @@ def cut(args, pipeArg):
 
             except IndexError:
                 raise IndexError(
-                    f"cut: option requires an argument -- n \n")
+                    f"cut: option requires an argument -- b \n")
             except ValueError:
                 raise ValueError(
-                    f"cut: illegal line count \'{args[1]}\' \n")
+                    f"cut: illegal line count \n")
     result = []
     fs = None
     lines = []
@@ -76,7 +76,7 @@ def cut(args, pipeArg):
                                         x.split("-")[0])-1:]
                                     tmp[changelow] = tmp[changelow].decode(
                                         "utf8")
-
+                                    continue
                                 else:
                                     continue
 

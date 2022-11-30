@@ -15,10 +15,10 @@ def head(args, pipeArg):
                 args.pop(0)
                 args.pop(0)
             except IndexError:
-                raise IndexError(f"head: option requires an arguement -- n \n")
+                raise IndexError(f"head: option requires an argument -- n \n")
             except ValueError:
                 raise ValueError(
-                    f"head: illegal line count -- \'{args[1]}\' \n")
+                    f"head: illegal line count \n")
 
     args = glob(None, None, args, True)
 
@@ -46,8 +46,9 @@ def head(args, pipeArg):
                 lines = file_path.splitlines()
             else:
                 if os.path.isdir(file_path):
-                    raise IsADirectoryError(
-                        f"cat: {file_path}: is a directory \n")
+                    result.append(
+                        f"cat: {file_path}: is a directory")
+                    continue
                 f = open(file_path, 'r')
                 if fs == None:
                     fs = file_path

@@ -15,9 +15,9 @@ def tail(args, pipeArg):
                 if index > 0:
                     index *= -1
             except IndexError:
-                raise IndexError(f"tail: option requires an arguement -- n \n")
+                raise IndexError(f"tail: option requires an argument -- n \n")
             except ValueError:
-                raise ValueError(f"tail: illegal line count \'{args[1]}\' \n")
+                raise ValueError(f"tail: illegal line count \n")
 
     args = glob(None, None, args, True)
 
@@ -42,8 +42,9 @@ def tail(args, pipeArg):
                 lines = file_path.splitlines()
             else:
                 if os.path.isdir(file_path):
-                    raise IsADirectoryError(
-                        f"cat: {file_path}: is a directory \n")
+                    result.append(
+                        f"cat: {file_path}: is a directory")
+                    continue
                 f = open(file_path, 'r')
                 if fs == None:
                     fs = file_path

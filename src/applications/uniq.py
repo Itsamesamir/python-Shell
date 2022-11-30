@@ -48,4 +48,5 @@ def uniq(args, pipeArg):
 
         return [line for line in lines]
     except FileNotFoundError:
-        raise TypeError(f"uniq: {args[0]}: no such file or directory \n")
+        raise FileNotFoundError(
+            f"uniq: {args[0]}: no such file or directory \n")
