@@ -1,4 +1,3 @@
-import os
 from .auxillary.glob import glob
 
 
@@ -17,6 +16,7 @@ def cat(args, pipeArg):
             print()
             return
     args = glob(None, None, args, True)
+    # reads and loads contents from each file passed as an argument
     for file_path in args:
         try:
             f = open(file_path, 'r')
@@ -27,8 +27,6 @@ def cat(args, pipeArg):
             raise FileNotFoundError(
                 f"cat: {file_path}: no such file or directory \n")
         except IsADirectoryError:
-            result.append(f"cat: {file_path}: is a directory")
-        except UnicodeDecodeError:
-            raise UnicodeDecodeError(
-                f"cat: {file_path}: is a binary file \n")
+            raise IsADirectoryError(
+                f"cat: {file_path}: is a directory \n")
     return result

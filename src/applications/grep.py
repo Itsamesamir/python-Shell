@@ -21,6 +21,7 @@ def grep(args, pipeArg):
     pattern = args[0]
     args.pop(0)
     args = glob(None, None, args, True)
+    # Returns all lines of a file that match with a specific pattern for each specified filepath
     for file_path in args:
         try:
             if pipeArg:

@@ -13,7 +13,7 @@ def find(args, pipeArg):
                     "find: -name requires additional arguments \n")
             elif len(args) > 3:
                 raise ValueError(
-                    f"find: {args[3]}: unkown primary or operator \n")
+                    f"find: {args[3]}: unknown primary or operator \n")
         elif args[0] == '-name':
             args.insert(0, './')
         else:
@@ -30,6 +30,7 @@ def find(args, pipeArg):
     args = glob(None, None, args[:-2], True)
     args.append('-name')
     args.append(pattern)
+    # runs glob at each file path to find similarly matching files
     for filepath in args[:-2]:
         if os.path.exists(filepath):
             for n in glob(pattern, filepath):

@@ -7,6 +7,7 @@ def echo(args, pipeArg):
     for m in range(0, len(args)):
         tmp = list(args[m])
         n = 0
+        # removes back spaces if specified for character escaping
         while n < len(tmp):
             if tmp[n] == '\\':
                 tmp.pop(n)

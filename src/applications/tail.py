@@ -15,9 +15,9 @@ def tail(args, pipeArg):
                 if index > 0:
                     index *= -1
             except IndexError:
-                raise IndexError(f"tail: option requires an argument -- n \n")
+                raise IndexError("tail: option requires an argument -- n \n")
             except ValueError:
-                raise ValueError(f"tail: illegal line count \n")
+                raise ValueError("tail: illegal line count \n")
 
     args = glob(None, None, args, True)
 
@@ -36,6 +36,7 @@ def tail(args, pipeArg):
 
     result = []
     fs = None
+    # Returns the last 10 lines of a file(s) unless otherwise specified
     for file_path in args:
         try:
             if pipeArg:
@@ -46,10 +47,10 @@ def tail(args, pipeArg):
                         f"cat: {file_path}: is a directory")
                     continue
                 f = open(file_path, 'r')
-                if fs == None:
+                if fs is None:
                     fs = file_path
                 if fs != file_path:
-                    result.append(' ')
+                    result.append('')
                 lines = f.read().splitlines()
                 f.close()
                 if len(args) > 1:
@@ -61,5 +62,5 @@ def tail(args, pipeArg):
                     result.append(line)
         except FileNotFoundError:
             raise FileNotFoundError(
-                f"head: {file_path}: no such file or directory \n")
+                f"tail: {file_path}: no such file or directory \n")
     return result

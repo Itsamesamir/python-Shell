@@ -15,10 +15,10 @@ def head(args, pipeArg):
                 args.pop(0)
                 args.pop(0)
             except IndexError:
-                raise IndexError(f"head: option requires an argument -- n \n")
+                raise IndexError("head: option requires an argument -- n \n")
             except ValueError:
                 raise ValueError(
-                    f"head: illegal line count \n")
+                    "head: illegal line count \n")
 
     args = glob(None, None, args, True)
 
@@ -40,6 +40,7 @@ def head(args, pipeArg):
 
     result = []
     fs = None
+    # Returns the first 10 lines of a file(s) unless otherwise specified
     for file_path in args:
         try:
             if pipeArg:
@@ -47,10 +48,10 @@ def head(args, pipeArg):
             else:
                 if os.path.isdir(file_path):
                     result.append(
-                        f"cat: {file_path}: is a directory")
+                        f"head: {file_path}: is a directory")
                     continue
                 f = open(file_path, 'r')
-                if fs == None:
+                if fs is None:
                     fs = file_path
                 if fs != file_path:
                     result.append('')

@@ -1,7 +1,8 @@
 import os
 import sys
 
-from antlr4 import *
+from antlr4 import InputStream
+from antlr4 import CommonTokenStream
 
 from dist.ShellGrammarLexer import ShellGrammarLexer
 
@@ -19,11 +20,13 @@ from applications.sort import sort
 from applications.cut import cut
 from applications.exit import exit
 
+
 APPLICATIONS = ['pwd', 'cd', 'echo', 'ls', 'cat', 'head',
                 'tail', 'grep', 'find', 'sort', 'cut', 'uniq', 'exit']
 
 
 class operator():
+    # Parse input string and tokanise it using lexer grammar
     def __init__(self, inp):
         data = InputStream(inp)
         lexer = ShellGrammarLexer(data)
@@ -35,8 +38,7 @@ class operator():
         self.typeList = [token.type for token in stream[:-1]]
         self.cycle = 0
 
-    # EVALUATION
-
+    # Segments tokens into groups seperated by sequences, pipes, or redirections (formats the stream input)
     def formatStream(self):
         text_list = []
         type_list = []
@@ -57,7 +59,7 @@ class operator():
                 if (self.textList[n] == "\'") or (self.textList[n] == "\"") or (self.textList[n] == "`"):
                     try:
                         while 1:
-                            inp = input()
+                            input()
                     except KeyboardInterrupt:
                         print('\n')
                         return
@@ -92,6 +94,7 @@ class operator():
                 f"COMP0010 shell: command not found: {text_list[self.cycle][0]}")
             return
 
+    # Checks for back quotes or double quotes then recursively executes what is in them and replaces command with its output
     def comSub(self, text_list, type_list):
         for n in range(0, len(text_list[self.cycle])):
             if type_list[self.cycle][n] == 20:
@@ -118,10 +121,11 @@ class operator():
         else:
             pass
 
+    # Opens file, read its contents, and passes it on to the subsequent command
     def redirectionLeft(self, text_list, type_list, infront=False):
         if infront:
             if len(text_list) < 2:
-                raise ValueError("Expected arguement after redirection \n")
+                raise ValueError("Expected argument after redirection \n")
             else:
                 try:
                     f = open(text_list[self.cycle+1][0], 'r')
@@ -134,13 +138,13 @@ class operator():
                     return tmp
                 except FileNotFoundError:
                     raise FileNotFoundError(
-                        f"{text_list[self.cycle+2][0]}: no such file \n")
+                        f"{text_list[self.cycle+1][0]}: no such file \n")
                 except IsADirectoryError:
                     raise IsADirectoryError(
-                        f"{text_list[self.cycle+2][0]} is a directory \n")
+                        f"{text_list[self.cycle+1][0]}: is a directory \n")
         else:
             if self.cycle+2 > len(text_list):
-                raise ValueError("Expected arguement after redirection \n")
+                raise ValueError("Expected argument after redirection \n")
             else:
                 try:
                     f = open(text_list[self.cycle+2][0], 'r')
@@ -155,13 +159,13 @@ class operator():
                         f"{text_list[self.cycle+2][0]}: no such file \n")
                 except IsADirectoryError:
                     raise IsADirectoryError(
-                        f"{text_list[self.cycle+2][0]} is a directory \n")
+                        f"{text_list[self.cycle+2][0]}: is a directory \n")
 
     def redirectionRight(self, text_list, tmp):
         if self.cycle+1 > len(text_list):
-            raise ValueError("Expected arguement after redirection \n")
+            raise ValueError("Expected argument after redirection \n")
         elif len(text_list) < 2:
-            raise ValueError("Expected arguement after redirection \n")
+            raise ValueError("Expected argument after redirection \n")
         else:
             self.cycle += 1
             try:
@@ -172,13 +176,11 @@ class operator():
                 f.close()
                 self.cycle += 1
                 return None
-            except FileNotFoundError:
-                raise FileNotFoundError(
-                    f"{text_list[self.cycle][0]}: no such file")
             except IsADirectoryError:
                 raise IsADirectoryError(
-                    f"{text_list[self.cycle+2][0]} is a directory \n")
+                    f"{text_list[self.cycle][0]}: is a directory \n")
 
+    # Print out result of current command unless its hidden to simply return the result to the next command
     def sequence(self, text_list, tmp, hidden):
         if hidden:
             self.cycle += 1
@@ -189,9 +191,11 @@ class operator():
             self.returnOutput(tmp)
             self.cycle += 1
 
+    # Passes output of previous command onto the current command as input
+
     def pipe(self, text_list, type_list, tmp):
         if self.cycle+1 > len(text_list):
-            raise ValueError("Expected arguement after pipe")
+            raise ValueError("Expected argument after pipe")
         else:
             self.cycle += 1
             self.comSub(text_list, type_list)
@@ -202,7 +206,6 @@ class operator():
         if len(self.textList) == 0:
             return
 
-        # Segments tokens into groups seperated by sequences, pipes, or redirections (formats the stream input)
         output = self.formatStream()
         if output:
             text_list = output[0]
@@ -248,7 +251,7 @@ if __name__ == "__main__":
         if arg_num != 2:
             print("wrong number of arguments")
         if sys.argv[1] != '-c':
-            print('your mother is very lovely good sir :-)')
+            print(f'unexpected command line argument {sys.argv[1]}')
         evaluator = operator(sys.argv[2])
         evaluator.run()
     else:

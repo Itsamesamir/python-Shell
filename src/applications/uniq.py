@@ -24,6 +24,7 @@ def uniq(args, pipeArg):
 
     args = glob(None, None, args, True)
 
+    # Returns all lines of a file that are adjacently distinct to each other (case insensitive if specified)
     try:
         if pipeArg:
             lines = args[0].splitlines()

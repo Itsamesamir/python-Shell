@@ -24,6 +24,7 @@ def sort(args, pipeArg):
         reverse = True
 
     words = []
+    # Returns the contents of a file sorted (in reverse if specified)
     for file_path in args:
         try:
             f = open(file_path, 'r')

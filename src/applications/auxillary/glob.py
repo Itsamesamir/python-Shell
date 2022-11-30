@@ -4,6 +4,7 @@ import re
 
 def glob(pattern=None, path=None, args=None, basic=False):
     result = []
+    # If a list of values provided run glob on each of them as the pattern if possible
     if args:
         for n in range(0, len(args)):
             if '*' in args[n]:
@@ -15,6 +16,7 @@ def glob(pattern=None, path=None, args=None, basic=False):
         return result
     pattern = list(pattern)
     n = 0
+    # Formats special characters properly in the pattern so that the search will work with regex
     while n < len(pattern):
         if pattern[n] in ['^', '$', '.', '|', '?', '+', '(', ')', '[', ']', '{', '}']:
             pattern[n] = '\\' + pattern[n]
@@ -31,6 +33,7 @@ def glob(pattern=None, path=None, args=None, basic=False):
     pattern = ''.join(pattern)
     if not path:
         path = './'
+    # Basic traversal will check files in the current directory whereas nonbasic will recursively check all child directories too
     if basic:
         for fileName in os.listdir(path):
             if re.search(pattern, fileName):
@@ -40,11 +43,7 @@ def glob(pattern=None, path=None, args=None, basic=False):
                     result.append(os.path.join(path, fileName))
     else:
         for dName, sdName, fList in os.walk(path):
-            if pattern:
-                for fileName in fList:
-                    if re.search(pattern, fileName):
-                        result.append(os.path.join(dName, fileName))
-            else:
-                for fileName in fList:
+            for fileName in fList:
+                if re.search(pattern, fileName):
                     result.append(os.path.join(dName, fileName))
     return result
