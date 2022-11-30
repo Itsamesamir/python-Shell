@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 
 from antlr4 import *
@@ -18,6 +17,7 @@ from applications.find import find
 from applications.uniq import uniq
 from applications.sort import sort
 from applications.cut import cut
+from applications.exit import exit
 
 APPLICATIONS = ['pwd', 'cd', 'echo', 'ls', 'cat', 'head',
                 'tail', 'grep', 'find', 'sort', 'cut', 'uniq', 'exit']
@@ -34,46 +34,6 @@ class operator():
         self.indexList = [token.tokenIndex for token in stream[:-1]]
         self.typeList = [token.type for token in stream[:-1]]
         self.cycle = 0
-
-    # APPLICATIONS
-    def exit(self, args, pipeArg):
-        sys.exit(0)
-
-    def pwd(self, args, pipeArg):
-        return pwd(args, pipeArg)
-
-    def cd(self, args, pipeArg):
-        cd(args, pipeArg)
-
-    def echo(self, args, pipeArg):
-        return echo(args, pipeArg)
-
-    def ls(self, args, pipeArg):
-        return ls(args, pipeArg)
-
-    def cat(self, args, pipeArg):
-        return cat(args, pipeArg)
-
-    def head(self, args, pipeArg):
-        return head(args, pipeArg)
-
-    def tail(self, args, pipeArg):
-        return tail(args, pipeArg)
-
-    def grep(self, args, pipeArg):
-        return grep(args, pipeArg)
-
-    def uniq(self, args, pipeArg):
-        return uniq(args, pipeArg)
-
-    def find(self, args, pipeArg):
-        return find(args, pipeArg)
-
-    def sort(self, args, pipeArg):
-        return sort(args, pipeArg)
-
-    def cut(self, args, pipeArg):
-        return cut(args, pipeArg)
 
     # EVALUATION
 
@@ -125,7 +85,7 @@ class operator():
     def runApp(self, text_list, pipeArg=None):
         if text_list[self.cycle][0] in APPLICATIONS:
             tmp = eval(
-                'self.'+text_list[self.cycle][0]+'('+str(text_list[self.cycle][1:])+','+str(pipeArg)+')')
+                text_list[self.cycle][0]+'('+str(text_list[self.cycle][1:])+','+str(pipeArg)+')')
             return tmp
         else:
             print(
@@ -151,59 +111,94 @@ class operator():
                         count += 2
                     text_list[self.cycle][n] = ''.join(backq_split)
 
-    def glob(self, pattern=None, path=None, args=None, basic=False):
-        result = []
-        if args:
-            for n in range(0, len(args)):
-                if '*' in args[n]:
-                    result = result + self.glob(args[n], None, None, True)
-                else:
-                    result.append(args[n])
-            return result
-        if not pattern:
-            return result
-        pattern = list(pattern)
-        n = 0
-        while n < len(pattern):
-            if pattern[n] in ['^', '$', '.', '|', '?', '+', '(', ')', '[', ']', '{', '}']:
-                pattern[n] = '\\' + pattern[n]
-            if pattern[n] == '*':
-                if os.path.isdir(''.join(pattern[:n])):
-                    path = ''.join(pattern[:n])
-                    del pattern[:n]
-                    n = 0
-                pattern[n] = '.*'
-            n += 1
-        if '.*' not in pattern:
-            pattern.insert(0, '^')
-        pattern.append('$')
-        pattern = ''.join(pattern)
-        if not path:
-            path = './'
-        if basic:
-            for fileName in os.listdir(path):
-                if re.search(pattern, fileName):
-                    if path == './':
-                        result.append(fileName)
-                    else:
-                        result.append(os.path.join(path, fileName))
-        else:
-            for dName, sdName, fList in os.walk(path):
-                if pattern:
-                    for fileName in fList:
-                        if re.search(pattern, fileName):
-                            result.append(os.path.join(dName, fileName))
-                else:
-                    for fileName in fList:
-                        result.append(os.path.join(dName, fileName))
-        return result
-
     def returnOutput(self, output):
         if output:
             for args in output:
                 print(args)
         else:
             pass
+
+    def redirectionLeft(self, text_list, type_list, infront=False):
+        if infront:
+            if len(text_list) < 2:
+                raise ValueError("Expected arguement after redirection \n")
+            else:
+                try:
+                    f = open(text_list[self.cycle+1][0], 'r')
+                    content = f.read()
+                    f.close()
+                    self.cycle += 2
+                    self.comSub(text_list, type_list)
+                    tmp = self.runApp(text_list, [content[:-1]])
+                    self.cycle += 1
+                    return tmp
+                except FileNotFoundError:
+                    raise FileNotFoundError(
+                        f"{text_list[self.cycle+2][0]}: no such file \n")
+                except IsADirectoryError:
+                    raise IsADirectoryError(
+                        f"{text_list[self.cycle+2][0]} is a directory \n")
+        else:
+            if self.cycle+2 > len(text_list):
+                raise ValueError("Expected arguement after redirection \n")
+            else:
+                try:
+                    f = open(text_list[self.cycle+2][0], 'r')
+                    content = f.read()
+                    f.close()
+                    self.comSub(text_list, type_list)
+                    tmp = self.runApp(text_list, [content[:-1]])
+                    self.cycle += 3
+                    return tmp
+                except FileNotFoundError:
+                    raise FileNotFoundError(
+                        f"{text_list[self.cycle+2][0]}: no such file \n")
+                except IsADirectoryError:
+                    raise IsADirectoryError(
+                        f"{text_list[self.cycle+2][0]} is a directory \n")
+
+    def redirectionRight(self, text_list, tmp):
+        if self.cycle+1 > len(text_list):
+            raise ValueError("Expected arguement after redirection \n")
+        elif len(text_list) < 2:
+            raise ValueError("Expected arguement after redirection \n")
+        else:
+            self.cycle += 1
+            try:
+                if os.path.isdir(text_list[self.cycle][0]):
+                    print(f"{text_list[self.cycle][0]} is a directory")
+                    return
+                content = '\n'.join(tmp)
+                content = content + "\n"
+                f = open(text_list[self.cycle][0], 'w')
+                f.write(content)
+                f.close()
+                self.cycle += 1
+                return None
+            except FileNotFoundError:
+                raise FileNotFoundError(
+                    f"{text_list[self.cycle][0]}: no such file")
+            except IsADirectoryError:
+                raise IsADirectoryError(
+                    f"{text_list[self.cycle+2][0]} is a directory \n")
+
+    def sequence(self, text_list, tmp, hidden):
+        if hidden:
+            self.cycle += 1
+            tmp = [tmp[0] + ' ' + self.runApp(text_list)[0]]
+            self.cycle += 1
+            return tmp
+        else:
+            self.returnOutput(tmp)
+            self.cycle += 1
+
+    def pipe(self, text_list, type_list, tmp):
+        if self.cycle+1 > len(text_list):
+            raise ValueError("Expected arguement after pipe")
+        else:
+            self.cycle += 1
+            self.comSub(text_list, type_list)
+            return self.runApp(text_list, tmp)
 
     def run(self, hidden=False):
         # Check if stdrin is empty and if it is end the execution of the function
@@ -222,88 +217,27 @@ class operator():
         tmp = None
         while len(text_list) > self.cycle:
             if text_list[0] == '<':
-                if len(text_list) < 2:
-                    print("Expected arguement after redirection \n")
-                    return
-                else:
-                    try:
-                        f = open(text_list[self.cycle+1][0], 'r')
-                        content = f.read()
-                        f.close()
-                        self.cycle += 2
-                        self.comSub(text_list, type_list)
-                        tmp = self.runApp(text_list, [content[:-1]])
-                        self.cycle += 1
-                        continue
-                    except FileNotFoundError:
-                        raise FileNotFoundError(
-                            f"{text_list[self.cycle+2][0]}: no such file \n")
-                    except IsADirectoryError:
-                        raise IsADirectoryError(
-                            f"{text_list[self.cycle+2][0]} is a directory \n")
+                tmp = self.redirectionLeft(text_list, type_list, True)
+                continue
             elif (self.cycle+1 < len(text_list)) and text_list[self.cycle+1] == '<':
-                if self.cycle+2 > len(text_list):
-                    raise ValueError("Expected arguement after redirection \n")
-                else:
-                    try:
-                        f = open(text_list[self.cycle+2][0], 'r')
-                        content = f.read()
-                        f.close()
-                        self.comSub(text_list, type_list)
-                        tmp = self.runApp(text_list, [content[:-1]])
-                        self.cycle += 3
-                        continue
-                    except FileNotFoundError:
-                        raise FileNotFoundError(
-                            f"{text_list[self.cycle+2][0]}: no such file \n")
-                    except IsADirectoryError:
-                        raise IsADirectoryError(
-                            f"{text_list[self.cycle+2][0]} is a directory \n")
+                tmp = self.redirectionLeft(text_list, type_list)
+                continue
             elif text_list[self.cycle] == ';':
-                if hidden:
-                    self.cycle += 1
-                    tmp = [tmp[0] + ' ' + self.runApp(text_list)[0]]
-                else:
-                    self.returnOutput(tmp)
-                self.cycle += 1
+                seq_tmp = self.sequence(text_list, tmp, hidden)
+                if seq_tmp:
+                    tmp = seq_tmp
                 continue
             elif text_list[self.cycle] == '|':
-                if self.cycle+1 > len(text_list):
-                    raise ValueError("Expected arguement after pipe")
-                else:
-                    self.cycle += 1
-                    self.comSub(text_list, type_list)
-                    tmp = self.runApp(text_list, tmp)
+                tmp = self.pipe(text_list, type_list, tmp)
             elif text_list[self.cycle] == '>':
-                if self.cycle+1 > len(text_list):
-                    raise ValueError("Expected arguement after redirection \n")
-                elif len(text_list) < 2:
-                    raise ValueError("Expected arguement after redirection \n")
-                else:
-                    self.cycle += 1
-                    try:
-                        if os.path.isdir(text_list[self.cycle][0]):
-                            print(f"{text_list[self.cycle][0]} is a directory")
-                            return
-                        content = '\n'.join(tmp)
-                        content = content + "\n"
-                        f = open(text_list[self.cycle][0], 'w')
-                        f.write(content)
-                        f.close()
-                        self.cycle += 1
-                        tmp = None
-                        continue
-                    except FileNotFoundError:
-                        raise FileNotFoundError(
-                            f"{text_list[self.cycle][0]}: no such file")
-                    except IsADirectoryError:
-                        raise IsADirectoryError(
-                            f"{text_list[self.cycle+2][0]} is a directory \n")
+                tmp = self.redirectionRight(text_list, tmp)
+                continue
             else:
                 self.comSub(text_list, type_list)
                 tmp = self.runApp(text_list)
 
             self.cycle += 1
+
         if hidden:
             return tmp
         else:

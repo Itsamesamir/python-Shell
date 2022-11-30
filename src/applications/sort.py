@@ -18,6 +18,10 @@ def sort(args, pipeArg):
             print()
             return
     args = glob(None, None, args, True)
+    reverse = False
+    if args[0] == '-r':
+        args.pop(0)
+        reverse = True
 
     words = []
     for file_path in args:
@@ -26,10 +30,11 @@ def sort(args, pipeArg):
             for line in f:
                 words.append(line.strip())
             f.close()
-            result = sorted(words, key=None, reverse=False)
-            if args[0] == '-r':
+            if reverse:
                 result = sorted(words, key=None, reverse=True)
+            else:
+                result = sorted(words, key=None, reverse=False)
         except FileNotFoundError:
-            result.append(
-                f"sort: {file_path}: no such file or directory")
+            raise FileNotFoundError(
+                f"sort: {file_path}: no such file or directory \n")
     return result

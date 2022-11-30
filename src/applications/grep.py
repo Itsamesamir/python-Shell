@@ -5,8 +5,7 @@ from .auxillary.glob import glob
 
 def grep(args, pipeArg):
     if len(args) == 0:
-        print("grep: no arguments were entered")
-        return
+        raise ValueError("grep: too few arguements specified \n")
     elif len(args) == 1:
         if pipeArg:
             for n in pipeArg:
@@ -28,9 +27,8 @@ def grep(args, pipeArg):
                 lines = file_path.splitlines()
             else:
                 if os.path.isdir(file_path):
-                    result.append(
-                        f"cat: {file_path}: is a directory")
-                    continue
+                    raise IsADirectoryError(
+                        f"cat: {file_path}: is a directory \n")
                 f = open(file_path, 'r')
                 lines = f.read().splitlines()
                 f.close()
@@ -44,6 +42,6 @@ def grep(args, pipeArg):
                     else:
                         result.append(f"{file_path}:{line}")
         except FileNotFoundError:
-            result.append(
-                f"grep: {file_path}: no such file or directory")
+            raise FileNotFoundError(
+                f"grep: {file_path}: no such file or directory \n")
     return result

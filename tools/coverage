@@ -2,4 +2,4 @@
 
 TOOLS_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cd "$TOOLS_ROOT/../" && (coverage run --branch -m nose2 test || true) && coverage html && cd htmlcov/ && python -m http.server
+cd "$TOOLS_ROOT/../" && (coverage run --omit='src/applications/__init__.py','src/applications/auxillary/__init__.py','src/dist/*' --branch -m nose2 test || true) && coverage html && cd htmlcov/ && python -m http.server

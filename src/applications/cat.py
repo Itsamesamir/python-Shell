@@ -19,18 +19,16 @@ def cat(args, pipeArg):
     args = glob(None, None, args, True)
     for file_path in args:
         try:
-            if os.path.isdir(file_path):
-                result.append(
-                    f"cat: {file_path}: is a directory")
-                continue
             f = open(file_path, 'r')
             content = f.read()
             f.close()
             result.append(content[:-1])
         except FileNotFoundError:
-            result.append(
-                f"cat: {file_path}: no such file or directory")
+            raise FileNotFoundError(
+                f"cat: {file_path}: no such file or directory \n")
+        except IsADirectoryError:
+            raise IsADirectoryError(f"cat: {file_path}: is a directory \n")
         except UnicodeDecodeError:
-            result.append(
-                f"cat: {file_path}: is a binary file")
+            raise UnicodeDecodeError(
+                f"cat: {file_path}: is a binary file \n")
     return result

@@ -5,19 +5,19 @@ from .auxillary.glob import glob
 def find(args, pipeArg):
     pattern = None
     if len(args) == 0:
-        raise TypeError("find: please enter a file path or pattern")
+        raise ValueError("find: please enter a file path or pattern \n")
     if len(args) > 1:
         if args[1] == '-name':
             if len(args) == 2:
-                raise TypeError(
-                    "find: -name requires additional arguements")
+                raise ValueError(
+                    "find: -name requires additional arguements \n")
             elif len(args) > 3:
-                raise TypeError(
-                    f"find: {args[3]}: unkown primary or operator")
+                raise ValueError(
+                    f"find: {args[3]}: unkown primary or operator \n")
         elif args[0] == '-name':
             args.insert(0, './')
         else:
-            raise TypeError("find: too many arguements")
+            raise ValueError("find: too many arguements \n")
     if len(args) == 1:
         if args[0] == '-name':
             print("find: illegal option --n")
@@ -37,5 +37,6 @@ def find(args, pipeArg):
             if len(result) == 0:
                 result.append(f"find: no matches found: {pattern}")
         else:
-            raise TypeError(f"find: {filepath}: no such file or directory")
+            raise FileNotFoundError(
+                f"find: {filepath}: no such file or directory \n")
     return result

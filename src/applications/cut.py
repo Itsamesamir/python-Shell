@@ -7,7 +7,7 @@ def cut(args, pipeArg):
         for arg in pipeArg:
             args.append(arg)
     if len(args) == 0:
-        pass
+        raise ValueError(f"cut: no arguements specified \n")
     else:
         if args[0] == '-b':
             try:
@@ -15,15 +15,16 @@ def cut(args, pipeArg):
                 bytes_list = "".join(args.pop(0)).split(",")
 
             except IndexError:
-                raise TypeError(
+                raise IndexError(
                     f"cut: option requires an argument -- n \n")
             except ValueError:
-                raise TypeError(
+                raise ValueError(
                     f"cut: illegal line count \'{args[1]}\' \n")
     result = []
     fs = None
     lines = []
     tmp = []
+    args = glob(None, None, args, True)
     for file_path in args:
         try:
             if pipeArg:
@@ -55,9 +56,11 @@ def cut(args, pipeArg):
                             else:
                                 if int(x.split("-")[1]) > high:
                                     high = int(x.split("-")[1])
-                                    tmp[changehigh] = s[:int(
-                                        x.split("-")[1])]
-                                    changehigh = index
+                                    tmp[changehigh] = s[:int(x.split("-")[1])]
+                                    tmp[changehigh] = tmp[changehigh].decode(
+                                        "utf8")
+
+                                    continue
                                 else:
                                     continue
                         elif x[len(x)-1] == "-" or int(x.split("-")[1]) > len(s):
@@ -71,7 +74,9 @@ def cut(args, pipeArg):
                                     low = int(x.split("-")[0])-1
                                     tmp[changelow] = s[int(
                                         x.split("-")[0])-1:]
-                                    changelow = index
+                                    tmp[changelow] = tmp[changelow].decode(
+                                        "utf8")
+
                                 else:
                                     continue
 
@@ -87,5 +92,6 @@ def cut(args, pipeArg):
                 tmp.clear()
 
         except FileNotFoundError:
-            result.append(f"head: {file_path}: no such file or directory")
+            raise FileNotFoundError(
+                f"head: {file_path}: no such file or directory \n")
     return result

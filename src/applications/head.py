@@ -11,14 +11,14 @@ def head(args, pipeArg):
             try:
                 index = int(args[1])
                 if index < 0:
-                    raise TypeError(f"head: illegal line count -- {index}")
+                    raise TypeError(f"head: illegal line count -- {index} \n")
                 args.pop(0)
                 args.pop(0)
             except IndexError:
-                raise TypeError(f"head: option requires an arguement -- n")
+                raise IndexError(f"head: option requires an arguement -- n \n")
             except ValueError:
-                raise TypeError(
-                    f"head: illegal line count -- \'{args[1]}\'")
+                raise ValueError(
+                    f"head: illegal line count -- \'{args[1]}\' \n")
 
     args = glob(None, None, args, True)
 
@@ -46,9 +46,8 @@ def head(args, pipeArg):
                 lines = file_path.splitlines()
             else:
                 if os.path.isdir(file_path):
-                    result.append(
-                        f"cat: {file_path}: is a directory")
-                    continue
+                    raise IsADirectoryError(
+                        f"cat: {file_path}: is a directory \n")
                 f = open(file_path, 'r')
                 if fs == None:
                     fs = file_path
@@ -61,5 +60,6 @@ def head(args, pipeArg):
             for line in lines[:index]:
                 result.append(line)
         except FileNotFoundError:
-            result.append(f"head: {file_path}: no such file or directory")
+            raise FileNotFoundError(
+                f"head: {file_path}: no such file or directory \n")
     return result

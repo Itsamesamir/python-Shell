@@ -30,7 +30,8 @@ class TestShell(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        dockerfile = ("FROM " + cls.SHELL_IMAGE + "\nWORKDIR " + cls.TEST_DIR).encode()
+        dockerfile = ("FROM " + cls.SHELL_IMAGE +
+                      "\nWORKDIR " + cls.TEST_DIR).encode()
         args = ["docker", "build", "-t", cls.TEST_IMAGE, "-"]
         p = subprocess.run(args, input=dockerfile, stdout=subprocess.DEVNULL)
         if p.returncode != 0:
